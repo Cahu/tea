@@ -76,24 +76,20 @@ namespace TEA {
 		rv = poll(_sfds, 2, timeout_ms);
 
 		if (rv > 0) {
-			for (unsigned int i = 0; i < 2; i++) {
 
-				if (_sfds[i].revents & POLLIN) {
+			// Event on tcp socket?
+			if (_sfds[0].revents & POLLIN) {
+				int csock;
+
+				csock = accept(_tcp_socket, NULL, 0);
+
+				if (csock < 0) {
+					perror("accept");
+				}
+				
+				else {
 					fprintf(stderr, "New client connected\n");
-					
-					int csock;
-					struct sockaddr_in caddr;
-					socklen_t slen = sizeof (struct sockaddr_in);
-
-					csock = accept(
-						_tcp_socket, (struct sockaddr *) &caddr, &slen
-					);
-
-					if (csock < 0) {
-						perror("accept");
-						continue;
-					}
-
+				
 					if (!_free_slots.empty()) {
 						char HELLO[] = "Hi there\n";
 						send(csock, HELLO, sizeof HELLO, 0);
@@ -104,11 +100,13 @@ namespace TEA {
 
 					close(csock);
 				}
-
-				if (_sfds[i].revents & POLLHUP) {
-					throw "'Impossible' error";
-				}
 			}
+
+			else if (_sfds[0].revents & POLLHUP) {
+				throw "'Impossible' error";
+			}
+
+			// Event on udp socket?
 		}
 
 
