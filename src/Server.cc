@@ -1,12 +1,16 @@
 #include "Server.hh"
 
 #include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 
 #include <assert.h>
 
 
 namespace TEA {
+
+	char cookie_regex[] = "^COOKIE[[:space:]]+([[:digit:]]+)";
 
 	Server::Server(int port, unsigned int maxnclients) {
 		int rv;
@@ -61,12 +65,21 @@ namespace TEA {
 			_cfds[i].events  = POLLIN | POLLPRI;
 			_free_slots.push_back(i);
 		}
+
+		// compile regexes to match against clients' commands
+		if (0 != regcomp(&_cookie_re, cookie_regex, REG_EXTENDED)) {
+			fprintf(stderr, "Failed to compile regex\n");
+		}
 	}
 
 
 	Server::~Server() {
 		close(_tcp_socket);
+		//close(_udp_socket);
+
 		delete[] _cfds;
+
+		regfree(&_cookie_re);
 	}
 
 
@@ -99,6 +112,8 @@ namespace TEA {
 						assert(_cfds[slot].fd < 0);
 						_cfds[slot].fd     = csock;
 						_cfds[slot].events = POLLIN;
+
+						send_cookie(csock);
 					}
 
 					else {
@@ -131,25 +146,22 @@ namespace TEA {
 				// recv() will read 0 bytes.
 
 				if (_cfds[i].revents & POLLIN) {
-					size_t size;
+					ssize_t size;
 					char *msg = new char[64];
 					fprintf(stderr, "Got msg from client\n");
 
-					size = recv(csock, msg, 64, 0);
+					size = recv(csock, msg, 64-1, 0);
 
-					if (size <= 0) {
-						fprintf(stderr, "Client disconnected\n");
-						RECYCLE_SOCK(sock, _cfds[i]);
-						_free_slots.push_front(i);
+					if (size > 0) {
+						msg[size] = '\0';
+						handle_client_msg(csock, msg);
 					} else {
-						printf("MSG: %s", msg);
+						fprintf(stderr, "Client disconnected\n");
+						RECYCLE_SOCK(csock, _cfds[i]);
+						_free_slots.push_front(i);
 					}
-				}
 
-				if (_cfds[i].revents & POLLHUP) {
-					fprintf(stderr, "Client disconnected\n");
-					RECYCLE_SOCK(sock, _cfds[i]);
-					_free_slots.push_front(i);
+					delete[] msg;
 				}
 			}
 		}
@@ -165,5 +177,56 @@ namespace TEA {
 	int Server::udp_port(void) const
 	{
 		return _udp_port;
+	}
+
+
+	void Server::send_cookie(int sock)
+	{
+		int cookie;
+		char *msg = new char[32];
+
+		do {
+			cookie = rand() % 424242;
+		} while (_handshakes.find(cookie) != _handshakes.end());
+
+		_handshakes[cookie] = sock;
+
+		sprintf(msg, "COOKIE %d\n", cookie);
+		send(sock, msg, strlen(msg), cookie);
+
+		delete[] msg;
+	}
+
+
+	#define MAX_COOKIE_LEN 32
+
+	int Server::handle_client_msg(int sock, const char *msg)
+	{
+		regmatch_t m[2];
+
+		if (REG_NOMATCH != regexec(&_cookie_re, msg, 2, m, 0)) {
+			size_t cookielen = m[1].rm_eo - m[1].rm_so;
+
+			if (cookielen >= MAX_COOKIE_LEN) {
+				fprintf(stderr, "Cookie too long!\n");
+				return -1;
+			}
+
+			// extract cookie
+			char *cookiestr = new char[MAX_COOKIE_LEN];
+			snprintf(cookiestr, cookielen+1, "%s", msg+m[1].rm_so);
+			int cookienum = atoi(cookiestr);
+			delete[] cookiestr;
+
+			std::map<int, int>::iterator it = _handshakes.find(cookienum);
+			if (it != _handshakes.end()) {
+				printf("Found matching handshake\n");
+				_handshakes.erase(it);
+			} else {
+				printf("Cookie #%d unknown or too old\n", cookienum);
+			}
+		}
+
+		return 0;
 	}
 }

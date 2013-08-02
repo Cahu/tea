@@ -1,8 +1,13 @@
+#include <map>
 #include <list>
 
 #include <poll.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+
+#include <regex.h>
+#include <sys/types.h>
+
 
 #define MAXNCLIENTS 6  // default value
 
@@ -24,9 +29,16 @@ namespace TEA {
 		struct pollfd _sfds[2];     // server sockets
 		std::list<int> _free_slots; // free slots indices
 
-		private:
+		std::map<int, int> _handshakes;
+
+		// regexes
+		regex_t _cookie_re;
+
 		Server(Server &);
 		Server(const Server &);
+
+		void send_cookie(int sock);
+		int  handle_client_msg(int sock, const char *msg);
 
 		public:
 		~Server();
