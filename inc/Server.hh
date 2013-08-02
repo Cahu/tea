@@ -34,11 +34,18 @@ namespace TEA {
 		// regexes
 		regex_t _cookie_re;
 
+		private:
+		// do not allow copy
 		Server(Server &);
 		Server(const Server &);
 
+		int  handle_udp_msg();
+		int  handle_tcp_msg();
+		int  handle_client_msg(int csock);
+
 		void send_cookie(int sock);
-		int  handle_client_msg(int sock, const char *msg);
+		int  parse_client_msg(const char *msg);
+
 
 		public:
 		~Server();
