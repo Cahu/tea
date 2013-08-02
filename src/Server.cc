@@ -91,14 +91,17 @@ namespace TEA {
 					fprintf(stderr, "New client connected\n");
 				
 					if (!_free_slots.empty()) {
-						char HELLO[] = "Hi there\n";
-						send(csock, HELLO, sizeof HELLO, 0);
-					} else {
+						int slot = _free_slots.front();
+						_free_slots.pop_front();
+
+						_cfds[slot].fd     = csock;
+						_cfds[slot].events = POLLIN;
+					}
+
+					else {
 						char BYE[] = "No free slots, bye!\n";
 						send(csock, BYE, sizeof BYE, 0);
 					}
-
-					close(csock);
 				}
 			}
 
@@ -109,23 +112,41 @@ namespace TEA {
 			// Event on udp socket?
 		}
 
+#define RECYCLE_SOCK(sock, pfd) \
+		close(csock);           \
+		pfd.fd = -1;            \
 
 		// poll client fds
 		rv = poll(_cfds, _maxnclients, timeout_ms);
 
 		if (rv > 0) {
 			for (unsigned int i = 0; i < _maxnclients; i++) {
+				int csock = _cfds[i].fd;
+
+				// NOTE: a closed connection may be signaled with POLLIN or
+				// POLLHUP depending on the OS. If it's signaled with POLLIN,
+				// recv() will read 0 bytes.
 
 				if (_cfds[i].revents & POLLIN) {
+					size_t size;
+					char *msg = new char[64];
 					fprintf(stderr, "Got msg from client\n");
-					close(_cfds[i].fd);
-					_cfds[i].fd = -1;
+
+					size = recv(csock, msg, 64, 0);
+
+					if (size <= 0) {
+						fprintf(stderr, "Client disconnected\n");
+						RECYCLE_SOCK(sock, _cfds[i]);
+						_free_slots.push_front(i);
+					} else {
+						printf("MSG: %s", msg);
+					}
 				}
 
 				if (_cfds[i].revents & POLLHUP) {
 					fprintf(stderr, "Client disconnected\n");
-					close(_cfds[i].fd);
-					_cfds[i].fd = -1;
+					RECYCLE_SOCK(sock, _cfds[i]);
+					_free_slots.push_front(i);
 				}
 			}
 		}
