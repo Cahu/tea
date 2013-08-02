@@ -7,10 +7,12 @@
 
 #include <assert.h>
 
+#define MAX_MSG_LEN 64
 
 namespace TEA {
 
-	char cookie_regex[] = "^COOKIE[[:space:]]+([[:digit:]]+)";
+
+namespace TEA {
 
 	Server::Server(int port, unsigned int maxnclients) {
 		int rv;
@@ -68,11 +70,6 @@ namespace TEA {
 			_cfds[i].events  = POLLIN | POLLPRI;
 			_free_slots.push_back(i);
 		}
-
-		// compile regexes to match against clients' commands
-		if (0 != regcomp(&_cookie_re, cookie_regex, REG_EXTENDED)) {
-			fprintf(stderr, "Failed to compile regex\n");
-		}
 	}
 
 
@@ -81,8 +78,6 @@ namespace TEA {
 		//close(_udp_socket);
 
 		delete[] _cfds;
-
-		regfree(&_cookie_re);
 	}
 
 
@@ -113,17 +108,24 @@ namespace TEA {
 				int csock = _cfds[i].fd;
 
 				if (_cfds[i].revents & POLLIN) {
-					handle_client_msg(csock);
-					close(csock);
-					_cfds[i].fd = -1;
-					_free_slots.push_front(i);
+
+					try {
+						handle_client_msg(csock);
+					}
+
+					catch (const char *e) {
+						fprintf(stderr, "%s", e);
+						close(csock);
+						_cfds[i].fd = -1;
+						_free_slots.push_front(i);
+					}
 				}
 			}
 		}
 	}
 
 
-	int Server::handle_tcp_msg()
+	void Server::handle_tcp_msg()
 	{
 		int csock;
 
@@ -131,11 +133,11 @@ namespace TEA {
 
 		if (csock < 0) {
 			perror("accept");
-			return -1;
+			throw "Can't accept new client\n";
 		}
 
 		else {
-			fprintf(stderr, "New client connected\n");
+			puts("New client connected");
 
 			if (!_free_slots.empty()) {
 				int slot = _free_slots.front();
@@ -153,40 +155,56 @@ namespace TEA {
 				send(csock, BYE, sizeof BYE, 0);
 			}
 		}
-
-		return 0;
 	}
 
 
-	int Server::handle_udp_msg()
+	void Server::handle_udp_msg()
 	{
-		int rv = 0;
-		return rv;
-	}
-
-
-	int Server::handle_client_msg(int csock)
-	{
-		char *msg;
-		int rv = 0;
-		ssize_t size;
-
-		msg = new char[64];
+		char msg[MAX_MSG_LEN];
 		fprintf(stderr, "Got msg from client\n");
 
-		size = recv(csock, msg, 64-1, 0);
+		struct sockaddr_in from;
+		socklen_t slen = sizeof (struct sockaddr_in);
+
+		ssize_t size = recvfrom(
+			_udp_socket, msg, MAX_MSG_LEN-1, 0,
+			(struct sockaddr*) &from, &slen
+		);
+
 
 		if (size > 0) {
 			msg[size] = '\0';
-			rv = parse_client_msg(msg);
-		} else {
-			fprintf(stderr, "Client disconnected\n");
-			rv = -1;
+
+			try {
+				process_client_dgram(msg);
+			}
+
+			catch (const char *e) {
+				fprintf(stderr, "%s", e);
+			}
+		}
+		
+		else {
+			throw "Client disconnected\n";
+		}
+	}
+
+
+	void Server::handle_client_msg(int csock)
+	{
+		char msg[MAX_MSG_LEN];
+		fprintf(stderr, "Got msg from client\n");
+
+		ssize_t size = recv(csock, msg, 64-1, 0);
+
+		if (size > 0) {
+			msg[size] = '\0';
+			process_client_msg(msg);
 		}
 
-		delete[] msg;
-
-		return rv;
+		else {
+			throw "Client disconnected\n";
+		}
 	}
 
 
@@ -205,7 +223,7 @@ namespace TEA {
 	void Server::send_cookie(int sock)
 	{
 		int cookie;
-		char *msg = new char[32];
+		char msg[MAX_MSG_LEN];
 
 		do {
 			cookie = rand() % 424242;
@@ -215,40 +233,42 @@ namespace TEA {
 
 		sprintf(msg, "COOKIE %d\n", cookie);
 		send(sock, msg, strlen(msg), cookie);
-
-		delete[] msg;
 	}
 
 
-	#define MAX_COOKIE_LEN 32
-
-	int Server::parse_client_msg(const char *msg)
+	void Server::process_client_msg(const char *msg)
 	{
-		regmatch_t m[2];
+		if (NULL != strstr(msg, "JOIN")) {
+			fprintf(stderr, "JOIN\n");
+		}
 
-		if (REG_NOMATCH != regexec(&_cookie_re, msg, 2, m, 0)) {
-			size_t cookielen = m[1].rm_eo - m[1].rm_so;
+		else if (NULL != strstr(msg, "LEAVE")) {
+			fprintf(stderr, "LEAVE\n");
+		}
 
-			if (cookielen >= MAX_COOKIE_LEN) {
-				fprintf(stderr, "Cookie too long!\n");
-				return -1;
-			}
+		else if (NULL != strstr(msg, "QUIT")) {
+			fprintf(stderr, "QUIT\n");
+		}
 
-			// extract cookie
-			char *cookiestr = new char[MAX_COOKIE_LEN];
-			snprintf(cookiestr, cookielen+1, "%s", msg+m[1].rm_so);
-			int cookienum = atoi(cookiestr);
-			delete[] cookiestr;
+		else {
+			throw "Unrecognized message\n";
+		}
+	}
+
+
+	void Server::process_client_dgram(const char *dgram)
+	{
+		int cookienum;
+
+		if (sscanf(dgram, "COOKIE %d", &cookienum)) {
 
 			std::map<int, int>::iterator it = _handshakes.find(cookienum);
 			if (it != _handshakes.end()) {
 				printf("Found matching handshake\n");
 				_handshakes.erase(it);
 			} else {
-				printf("Cookie #%d unknown or too old\n", cookienum);
+				throw "Cookie #%d unknown or too old\n";
 			}
 		}
-
-		return 0;
 	}
 }

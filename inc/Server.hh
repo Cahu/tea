@@ -31,20 +31,19 @@ namespace TEA {
 
 		std::map<int, int> _handshakes;
 
-		// regexes
-		regex_t _cookie_re;
 
 		private:
 		// do not allow copy
 		Server(Server &);
 		Server(const Server &);
 
-		int  handle_udp_msg();
-		int  handle_tcp_msg();
-		int  handle_client_msg(int csock);
+		void handle_udp_msg();
+		void handle_tcp_msg();
+		void handle_client_msg(int csock);
 
 		void send_cookie(int sock);
-		int  parse_client_msg(const char *msg);
+		void process_client_msg(const char *msg);
+		void process_client_dgram(const char *msg);
 
 
 		public:
