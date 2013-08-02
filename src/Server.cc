@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <unistd.h>
 
+#include <assert.h>
+
 
 namespace TEA {
 
@@ -94,6 +96,7 @@ namespace TEA {
 						int slot = _free_slots.front();
 						_free_slots.pop_front();
 
+						assert(_cfds[slot].fd < 0);
 						_cfds[slot].fd     = csock;
 						_cfds[slot].events = POLLIN;
 					}
