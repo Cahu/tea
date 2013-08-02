@@ -24,6 +24,9 @@ namespace TEA {
 			throw "Can't create tcp socket";
 		}
 
+		int optval = 1;
+		setsockopt(_tcp_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+
 		_tcp_addr.sin_family      = AF_INET;
 		_tcp_addr.sin_port        = htons(port);
 		_tcp_addr.sin_addr.s_addr = INADDR_ANY;
