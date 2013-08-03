@@ -1,3 +1,4 @@
+#include <ctime>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -11,6 +12,9 @@ using TEA::Server;
 int main(void)
 {
 	Server serv(PORT);
+
+	// feed everything that needs randomness
+	srand(time(NULL));
 
 	while (1) {
 		serv.process_events(1);

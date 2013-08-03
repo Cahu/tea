@@ -5,11 +5,11 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#include <regex.h>
-#include <sys/types.h>
+#include "Client.hh"
 
 
 #define MAXNCLIENTS 6  // default value
+
 
 
 namespace TEA {
@@ -25,11 +25,19 @@ namespace TEA {
 		unsigned int _nclients;
 		unsigned int _maxnclients;
 
-		struct pollfd *_cfds;       // clients
-		struct pollfd _sfds[2];     // server sockets
+		std::map<int, int> _handshakes;  // cookie to client socket map
+
+		/* NOTE: in _clients and _cfds, the index in the array equals the
+		 * client's id. Ideally, this should be abstracted out but we need a
+		 * contiguous array when calling poll() */
+		Client **_clients;          // clients array
+		struct pollfd *_cfds;       // clients poll structures
+
+		/* list of free slots in _clients or _cfds */
 		std::list<int> _free_slots; // free slots indices
 
-		std::map<int, int> _handshakes;
+		/* TCP socket in _sfds[0], UDP socket in _sfds[1] */
+		struct pollfd _sfds[2];     // server poll structures
 
 
 		private:
@@ -38,17 +46,25 @@ namespace TEA {
 		Server(const Server &);
 
 		void handle_udp_msg();
-		void handle_tcp_msg();
-		void handle_client_msg(int csock);
+		void handle_new_client();
+		int handle_client_msg(int cidx);
+		int process_client_msg(int cidx, const char *msg);
+		int process_client_dgram(const struct sockaddr_in &, const char *);
+
 
 		void send_cookie(int sock);
-		void process_client_msg(const char *msg);
-		void process_client_dgram(const char *msg);
+
+		void add_client(int csock, const struct sockaddr_in &caddr);
+		void remove_client(int cidx);
+		void add_player(int cidx);
+		void remove_player(int cidx);
 
 
 		public:
 		~Server();
 		Server(int port, unsigned int maxnclients = MAXNCLIENTS);
+
+		bool full();
 
 		void process_events(unsigned int timeout_ms = 0);
 

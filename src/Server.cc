@@ -5,16 +5,20 @@
 #include <cstdlib>
 #include <unistd.h>
 
-#include <assert.h>
+#ifndef NDEBUG
+	#include <assert.h>
+#endif
+
 
 #define MAX_MSG_LEN 64
 
-namespace TEA {
-
 
 namespace TEA {
+	char SERVER_FULL[]  = "FULL\n";
+	char HANDSHAKE_OK[] = "HANDSHAKE OK\n";
 
-	Server::Server(int port, unsigned int maxnclients) {
+	Server::Server(int port, unsigned int maxnclients)
+	{
 		int rv;
 
 		_tcp_port = port;
@@ -27,7 +31,9 @@ namespace TEA {
 		}
 
 		int optval = 1;
-		setsockopt(_tcp_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+		setsockopt(
+			_tcp_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval
+		);
 
 		_tcp_addr.sin_family      = AF_INET;
 		_tcp_addr.sin_port        = htons(port);
@@ -52,8 +58,29 @@ namespace TEA {
 		}
 
 		// UDP socket
-		// TODO
-		_udp_socket = -1;
+		if (-1 == (_udp_socket = socket(AF_INET, SOCK_DGRAM, 0))) {
+			perror("socket");
+			throw "Can't create udp socket";
+		}
+
+		setsockopt(
+			_udp_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval
+		);
+
+		_udp_addr.sin_family      = AF_INET;
+		_udp_addr.sin_port        = htons(port);
+		_udp_addr.sin_addr.s_addr = INADDR_ANY;
+
+		rv = bind(
+			_udp_socket,
+			(struct sockaddr *) &_udp_addr,
+			sizeof (struct sockaddr_in)
+		);
+
+		if (-1 == rv) {
+			perror("bind");
+			throw "Can't create tcp socket";
+		}
 
 		// server poll stuff
 		_sfds[0].fd      = _tcp_socket;
@@ -64,34 +91,101 @@ namespace TEA {
 		// clients poll stuff
 		_nclients = 0;
 		_maxnclients = maxnclients;
-		_cfds = new struct pollfd[_maxnclients];
+		_clients = new Client*[_maxnclients];
+		_cfds    = new struct pollfd[_maxnclients];
 		for (unsigned int i = 0; i < _maxnclients; i++) {
-			_cfds[i].fd      = -1; // unset: poll will ignore fds < 0
-			_cfds[i].events  = POLLIN | POLLPRI;
 			_free_slots.push_back(i);
+			_clients[i]     = NULL;
+			_cfds[i].fd     = -1; // unset: poll will ignore fds < 0
+			_cfds[i].events = POLLIN;
 		}
 	}
 
 
 	Server::~Server() {
 		close(_tcp_socket);
-		//close(_udp_socket);
+		close(_udp_socket);
+
+		for (unsigned int i = 0; i < _maxnclients; i++) {
+			delete _clients[i];
+		}
 
 		delete[] _cfds;
+		delete[] _clients;
+	}
+
+
+	bool Server::full()
+	{
+		return _free_slots.empty();
+	}
+
+
+	void Server::add_client(int csock, const struct sockaddr_in &caddr)
+	{
+		//TODO: make sure the ip address in csock is the same as the one in
+		//caddr.
+
+		if (full()) {
+			throw "Server full";
+		}
+
+		int id = _free_slots.front();
+		_free_slots.pop_front();
+
+#ifndef NDEBUG
+		assert(_cfds[id].fd < 0);
+		assert(_clients[id] == NULL);
+#endif
+
+		_cfds[id].fd     = csock;
+		_cfds[id].events = POLLIN;
+		_clients[id] = new Client(csock, caddr);
+
+#ifndef NDEBUG
+		fprintf(stderr, "New client id: %d\n", id);
+#endif
+	}
+
+
+	void Server::remove_client(int cidx)
+	{
+		int csock = _clients[cidx]->sock();
+
+#ifndef NDEBUG
+		assert(csock >= 0);
+#endif
+
+		close(csock);
+		_cfds[cidx].fd = -1;
+		_free_slots.push_front(cidx);
+
+		delete _clients[cidx];
+		_clients[cidx] = NULL;
+	}
+
+
+	void Server::add_player(int cidx)
+	{
+		;
+	}
+
+
+	void Server::remove_player(int cidx)
+	{
+		;
 	}
 
 
 	void Server::process_events(unsigned int timeout_ms)
 	{
-		int rv;
+		//TODO: use the timeout
 
 		// poll server fds
-		rv = poll(_sfds, 2, timeout_ms);
-
-		if (rv > 0) {
+		while (poll(_sfds, 2, 0)) {
 			// Event on tcp socket?
 			if (_sfds[0].revents & POLLIN) {
-				handle_tcp_msg();
+				handle_new_client();
 			}
 
 			// Event on udp socket?
@@ -101,31 +195,24 @@ namespace TEA {
 		}
 
 		// poll client fds
-		rv = poll(_cfds, _maxnclients, timeout_ms);
+		while (poll(_cfds, _maxnclients, timeout_ms)) {
 
-		if (rv > 0) {
 			for (unsigned int i = 0; i < _maxnclients; i++) {
-				int csock = _cfds[i].fd;
-
 				if (_cfds[i].revents & POLLIN) {
-
-					try {
-						handle_client_msg(csock);
+					if (-1 == handle_client_msg(i)) {
+						remove_client(i);
 					}
+				}
 
-					catch (const char *e) {
-						fprintf(stderr, "%s", e);
-						close(csock);
-						_cfds[i].fd = -1;
-						_free_slots.push_front(i);
-					}
+				else if (_cfds[i].revents & POLLHUP) {
+					remove_client(i);
 				}
 			}
 		}
 	}
 
 
-	void Server::handle_tcp_msg()
+	void Server::handle_new_client()
 	{
 		int csock;
 
@@ -139,20 +226,10 @@ namespace TEA {
 		else {
 			puts("New client connected");
 
-			if (!_free_slots.empty()) {
-				int slot = _free_slots.front();
-				_free_slots.pop_front();
-
-				assert(_cfds[slot].fd < 0);
-				_cfds[slot].fd     = csock;
-				_cfds[slot].events = POLLIN;
-
+			if (!full()) {
 				send_cookie(csock);
-			}
-
-			else {
-				char BYE[] = "No free slots, bye!\n";
-				send(csock, BYE, sizeof BYE, 0);
+			} else {
+				send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
 			}
 		}
 	}
@@ -161,7 +238,6 @@ namespace TEA {
 	void Server::handle_udp_msg()
 	{
 		char msg[MAX_MSG_LEN];
-		fprintf(stderr, "Got msg from client\n");
 
 		struct sockaddr_in from;
 		socklen_t slen = sizeof (struct sockaddr_in);
@@ -171,40 +247,27 @@ namespace TEA {
 			(struct sockaddr*) &from, &slen
 		);
 
-
 		if (size > 0) {
 			msg[size] = '\0';
-
-			try {
-				process_client_dgram(msg);
-			}
-
-			catch (const char *e) {
-				fprintf(stderr, "%s", e);
-			}
-		}
-		
-		else {
-			throw "Client disconnected\n";
+			process_client_dgram(from, msg);
 		}
 	}
 
 
-	void Server::handle_client_msg(int csock)
+	int Server::handle_client_msg(int cidx)
 	{
 		char msg[MAX_MSG_LEN];
-		fprintf(stderr, "Got msg from client\n");
-
+		int csock = _clients[cidx]->sock();
 		ssize_t size = recv(csock, msg, 64-1, 0);
 
 		if (size > 0) {
 			msg[size] = '\0';
-			process_client_msg(msg);
+			process_client_msg(cidx, msg);
+		} else {
+			return -1;
 		}
 
-		else {
-			throw "Client disconnected\n";
-		}
+		return 0;
 	}
 
 
@@ -236,7 +299,7 @@ namespace TEA {
 	}
 
 
-	void Server::process_client_msg(const char *msg)
+	int Server::process_client_msg(int cidx, const char *msg)
 	{
 		if (NULL != strstr(msg, "JOIN")) {
 			fprintf(stderr, "JOIN\n");
@@ -244,31 +307,57 @@ namespace TEA {
 
 		else if (NULL != strstr(msg, "LEAVE")) {
 			fprintf(stderr, "LEAVE\n");
+			remove_player(cidx);
 		}
 
 		else if (NULL != strstr(msg, "QUIT")) {
 			fprintf(stderr, "QUIT\n");
+			remove_client(cidx);
 		}
 
 		else {
-			throw "Unrecognized message\n";
+			return -1;
 		}
+
+		return 0;
 	}
 
 
-	void Server::process_client_dgram(const char *dgram)
-	{
+	int Server::process_client_dgram(
+		const sockaddr_in &from, const char *dgram
+	) {
 		int cookienum;
 
 		if (sscanf(dgram, "COOKIE %d", &cookienum)) {
 
 			std::map<int, int>::iterator it = _handshakes.find(cookienum);
-			if (it != _handshakes.end()) {
+
+			if (it == _handshakes.end()) {
+				fprintf(stderr, "Cookie #%d unknown or too old\n", cookienum);
+			}
+
+			else {
 				printf("Found matching handshake\n");
+
+				int csock = _handshakes[cookienum];
 				_handshakes.erase(it);
-			} else {
-				throw "Cookie #%d unknown or too old\n";
+
+				// promote to client state
+				if (!full()) {
+					add_client(csock, from);
+					send(csock, HANDSHAKE_OK, sizeof HANDSHAKE_OK, 0);
+				} else {
+					// unfortunately, someone else was faster with the
+					// handshake...
+					send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
+				}
 			}
 		}
+
+		else {
+			return -1;
+		}
+
+		return 0;
 	}
 }
