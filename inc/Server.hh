@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 
 #include "Client.hh"
+#include "Player.hh"
 
 
 #define MAXNCLIENTS 6  // default value
@@ -27,9 +28,9 @@ namespace TEA {
 
 		std::map<int, int> _handshakes;  // cookie to client socket map
 
-		/* NOTE: in _clients and _cfds, the index in the array equals the
-		 * client's id. Ideally, this should be abstracted out but we need a
-		 * contiguous array when calling poll() */
+		/* NOTE: in _clients, _playerds and _cfds, the index in the array
+		 * equals the client's id. */
+		Player **_players;          // players array
 		Client **_clients;          // clients array
 		struct pollfd *_cfds;       // clients poll structures
 

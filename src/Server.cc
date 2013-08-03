@@ -91,10 +91,12 @@ namespace TEA {
 		// clients poll stuff
 		_nclients = 0;
 		_maxnclients = maxnclients;
+		_players = new Player*[_maxnclients];
 		_clients = new Client*[_maxnclients];
 		_cfds    = new struct pollfd[_maxnclients];
 		for (unsigned int i = 0; i < _maxnclients; i++) {
 			_free_slots.push_back(i);
+			_players[i]     = NULL;
 			_clients[i]     = NULL;
 			_cfds[i].fd     = -1; // unset: poll will ignore fds < 0
 			_cfds[i].events = POLLIN;
@@ -107,11 +109,13 @@ namespace TEA {
 		close(_udp_socket);
 
 		for (unsigned int i = 0; i < _maxnclients; i++) {
-			delete _clients[i];
+			if (_clients[i] != NULL) { delete _clients[i]; }
+			if (_players[i] != NULL) { delete _players[i]; }
 		}
 
 		delete[] _cfds;
 		delete[] _clients;
+		delete[] _players;
 	}
 
 
@@ -150,30 +154,43 @@ namespace TEA {
 
 	void Server::remove_client(int cidx)
 	{
-		int csock = _clients[cidx]->sock();
+		int csock = _clients[cidx]->get_sock();
 
 #ifndef NDEBUG
 		assert(csock >= 0);
+		assert(_clients[cidx] != NULL);
 #endif
 
 		close(csock);
 		_cfds[cidx].fd = -1;
-		_free_slots.push_front(cidx);
+
+		if (_players[cidx] != NULL) {
+			remove_player(cidx);
+		}
 
 		delete _clients[cidx];
 		_clients[cidx] = NULL;
+
+		_free_slots.push_front(cidx);
 	}
 
 
 	void Server::add_player(int cidx)
 	{
-		;
+#ifndef NDEBUG
+		assert(_players[cidx] == NULL);
+#endif
+		_players[cidx] = new Player();
 	}
 
 
 	void Server::remove_player(int cidx)
 	{
-		;
+#ifndef NDEBUG
+		assert(_players[cidx] != NULL);
+#endif
+		delete _players[cidx];
+		_players[cidx] = NULL;
 	}
 
 
@@ -257,7 +274,7 @@ namespace TEA {
 	int Server::handle_client_msg(int cidx)
 	{
 		char msg[MAX_MSG_LEN];
-		int csock = _clients[cidx]->sock();
+		int csock = _clients[cidx]->get_sock();
 		ssize_t size = recv(csock, msg, 64-1, 0);
 
 		if (size > 0) {
@@ -303,6 +320,7 @@ namespace TEA {
 	{
 		if (NULL != strstr(msg, "JOIN")) {
 			fprintf(stderr, "JOIN\n");
+			add_player(cidx);
 		}
 
 		else if (NULL != strstr(msg, "LEAVE")) {

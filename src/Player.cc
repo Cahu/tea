@@ -1,5 +1,7 @@
 #include "Player.hh"
 
+#include <cstdio>
+
 
 namespace TEA {
 
@@ -11,7 +13,7 @@ namespace TEA {
 	}
 
 
-	Player::Player(double x = 0, double y = 0)
+	Player::Player(double x, double y)
 	{
 		_xpos = x;
 		_ypos = y;

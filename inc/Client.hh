@@ -19,8 +19,12 @@ namespace TEA {
 
 		int send_msg(const char *) const;
 
+		// compare identities
+		bool is(int) const;
+		bool is(const sockaddr_in &) const;
+
 		// accessors
-		int sock();
-		const struct sockaddr_in &addr(void) const;
+		int get_sock();
+		const struct sockaddr_in &get_addr(void) const;
 	};
 }
