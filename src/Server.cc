@@ -344,18 +344,20 @@ namespace TEA {
 	int Server::process_client_dgram(
 		const sockaddr_in &from, const char *dgram
 	) {
-		int cookienum;
+		unsigned int id;
+		unsigned int flag;
+		unsigned int cookienum;
 
-		if (sscanf(dgram, "COOKIE %d", &cookienum)) {
+		if (sscanf(dgram, "COOKIE %u", &cookienum)) {
 
 			std::map<int, int>::iterator it = _handshakes.find(cookienum);
 
 			if (it == _handshakes.end()) {
-				fprintf(stderr, "Cookie #%d unknown or too old\n", cookienum);
+				fprintf(stderr, "Cookie #%u unknown or too old\n", cookienum);
 			}
 
 			else {
-				printf("Found matching handshake\n");
+				puts("Found matching handshake");
 
 				int csock = _handshakes[cookienum];
 				_handshakes.erase(it);
@@ -369,6 +371,21 @@ namespace TEA {
 					// handshake...
 					send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
 				}
+			}
+		}
+
+		else if (2 == sscanf(dgram, "%u:%u", &id, &flag)) {
+
+			if (id > _maxnclients || _clients[id] == NULL) {
+				fprintf(stderr, "Got message with invalid id #%u\n", id);
+				return -1;
+			}
+
+			// make sure the id is owned by the right guy
+			if (_clients[id]->is(from)) {
+				puts("OK");
+			} else {
+				fprintf(stderr, "Someone trying to impersonate #%u!\n", id);
 			}
 		}
 
