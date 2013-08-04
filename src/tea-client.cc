@@ -29,6 +29,10 @@ int main(int argc, char *argv[])
 		init_connect(argv[1], PORT);
 	}
 
+	int id = handle_handshake();
+
+	printf("got ID #%d\n", id);
+
 	close(tcp_sock);
 	close(udp_sock);
 
@@ -55,7 +59,7 @@ void init_connect(const char *addr, unsigned short port)
 
 int handle_handshake(void)
 {
-	int id;
+	int id = -1;
 
 	ssize_t size;
 	char msg[MAX_MSG_LEN];
@@ -66,7 +70,6 @@ int handle_handshake(void)
 		perror("recv");
 		return -1;
 	}
-
 	msg[size] = '\0';
 
 	// send the cookie back
@@ -76,5 +79,17 @@ int handle_handshake(void)
 		send(udp_sock, msg, size, 0);
 	}
 
-	return 0;
+	// get an ID
+	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	if (size < 0) {
+		perror("recv");
+		return -1;
+	}
+	msg[size] = '\0';
+
+	if (1 != sscanf(msg, "ID %d", &id)) {
+		return -1;
+	}
+
+	return id;
 }

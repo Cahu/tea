@@ -146,6 +146,11 @@ namespace TEA {
 		_cfds[id].events = POLLIN;
 		_clients[id] = new Client(csock, caddr);
 
+		// send the client its ID
+		char msg[MAX_MSG_LEN];
+		sprintf(msg, "ID %d\n", id);
+		_clients[id]->send_msg(msg);
+
 #ifndef NDEBUG
 		fprintf(stderr, "New client id: %d\n", id);
 #endif
@@ -365,7 +370,6 @@ namespace TEA {
 				// promote to client state
 				if (!full()) {
 					add_client(csock, from);
-					send(csock, HANDSHAKE_OK, sizeof HANDSHAKE_OK, 0);
 				} else {
 					// unfortunately, someone else was faster with the
 					// handshake...
