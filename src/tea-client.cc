@@ -159,5 +159,25 @@ int handle_tcp_msg(void)
 
 int handle_udp_msg(void)
 {
+	ssize_t size;
+	char msg[MAX_MSG_LEN];
+
+	unsigned int id;
+	unsigned int flags;
+
+	size = recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
+	if (size <= 0) {
+		return -1;
+	}
+	msg[size] = '\0';
+
+	if (2 == sscanf(msg, "%u:%u", &id, &flags)) {
+		;
+	}
+
+	else {
+		fprintf(stderr, "Can't make sence of msg from server: %s\n", msg);
+	}
+
 	return 0;
 }
