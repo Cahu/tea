@@ -18,6 +18,7 @@ static int tcp_sock;
 static int udp_sock;
 
 void init_connect(const char *, unsigned short);
+int  handle_handshake(void);
 
 
 int main(int argc, char *argv[])
@@ -49,4 +50,31 @@ void init_connect(const char *addr, unsigned short port)
 
 	CHK("socket", tcp_sock = socket(AF_INET, SOCK_STREAM, 0));
 	CHK("connect", connect(tcp_sock, (sockaddr *) &saddr, sizeof saddr));
+}
+
+
+int handle_handshake(void)
+{
+	int id;
+
+	ssize_t size;
+	char msg[MAX_MSG_LEN];
+
+	// get a cookie
+	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	if (size < 0) {
+		perror("recv");
+		return -1;
+	}
+
+	msg[size] = '\0';
+
+	// send the cookie back
+	unsigned int cookienum;
+	if (1 == sscanf(msg, "COOKIE %u", &cookienum)) {
+		size = sprintf(msg, "COOKIE %u", cookienum);
+		send(udp_sock, msg, size, 0);
+	}
+
+	return 0;
 }
