@@ -72,7 +72,7 @@ int handle_handshake(void)
 	}
 	msg[size] = '\0';
 
-	// send the cookie back
+	// send the cookie back (on udp socket!)
 	unsigned int cookienum;
 	if (1 == sscanf(msg, "COOKIE %u", &cookienum)) {
 		size = sprintf(msg, "COOKIE %u", cookienum);
