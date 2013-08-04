@@ -105,6 +105,7 @@ int handle_handshake(void)
 	}
 	msg[size] = '\0';
 
+	// TODO: resend if packet lost
 	// send the cookie back (on udp socket!)
 	unsigned int cookienum;
 	if (1 == sscanf(msg, "COOKIE %u", &cookienum)) {
