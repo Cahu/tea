@@ -383,8 +383,15 @@ namespace TEA {
 
 			// make sure the id is owned by the right guy
 			if (_clients[id]->is(from)) {
-				puts("OK");
-			} else {
+				// broadcast flag
+				for (unsigned int i = 0; i < _maxnclients; i++) {
+					if (_clients[i] != NULL) {
+						_clients[i]->send_msg(dgram);
+					}
+				}
+			}
+
+			else {
 				fprintf(stderr, "Someone trying to impersonate #%u!\n", id);
 			}
 		}
