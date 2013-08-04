@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <unistd.h>
 
+#include <poll.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
@@ -30,8 +31,40 @@ int main(int argc, char *argv[])
 	}
 
 	int id = handle_handshake();
-
 	printf("got ID #%d\n", id);
+
+	// init structures for poll()
+	pollfd fds[2];
+	fds[0].fd     = tcp_sock;
+	fds[0].events = POLLIN;
+	fds[1].fd     = udp_sock;
+	fds[1].events = POLLIN;
+
+	while (1) {
+
+		// handle events on sockets
+		if (poll(fds, 2, -1) > 0) {
+
+			if (fds[0].revents & POLLIN) {
+				// handle tcp messages here
+				;
+			}
+
+			if (fds[1].revents & POLLIN) {
+				// handle udp messages here
+				;
+			}
+		}
+
+		// update state
+		;
+
+		// draw
+		;
+
+		// sleep
+		;
+	}
 
 	close(tcp_sock);
 	close(udp_sock);
