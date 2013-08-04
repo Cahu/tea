@@ -8,6 +8,11 @@
 #define PORT 9999
 #define MAX_MSG_LEN 64
 
+#define CHK(msg, cmd)       \
+	if (0 > (cmd)) {        \
+		perror(msg);        \
+		exit(EXIT_FAILURE); \
+	}
 
 static int tcp_sock;
 static int udp_sock;
@@ -33,37 +38,15 @@ int main(int argc, char *argv[])
 
 void init_connect(const char *addr, unsigned short port)
 {
-	int rv;
-	sockaddr_in server_addr;
+	sockaddr_in saddr;
 
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port   = htons(port);
-	inet_pton(AF_INET, addr, &server_addr.sin_addr.s_addr);
+	saddr.sin_family = AF_INET;
+	saddr.sin_port   = htons(port);
+	inet_pton(AF_INET, addr, &saddr.sin_addr.s_addr);
 
-	udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (udp_sock < 0) {
-		perror("socket");
-		exit(EXIT_FAILURE);
-	}
+	CHK("socket", udp_sock = socket(AF_INET, SOCK_DGRAM, 0));
+	CHK("connect", connect(udp_sock, (sockaddr *) &saddr, sizeof saddr));
 
-	// yes, connect an udp socket.
-	rv = connect(udp_sock, (sockaddr *) &server_addr, sizeof server_addr);
-	if (rv < 0) {
-		perror("connect");
-		close(udp_sock);
-		exit(EXIT_FAILURE);
-	}
-
-	tcp_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (tcp_sock < 0) {
-		perror("socket");
-		exit(EXIT_FAILURE);
-	}
-
-	rv = connect(tcp_sock, (sockaddr *) &server_addr, sizeof server_addr);
-	if (rv < 0) {
-		perror("connect");
-		close(tcp_sock);
-		exit(EXIT_FAILURE);
-	}
+	CHK("socket", tcp_sock = socket(AF_INET, SOCK_STREAM, 0));
+	CHK("connect", connect(tcp_sock, (sockaddr *) &saddr, sizeof saddr));
 }
