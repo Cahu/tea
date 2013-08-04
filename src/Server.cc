@@ -169,12 +169,15 @@ namespace TEA {
 		close(csock);
 		_cfds[cidx].fd = -1;
 
+		delete _clients[cidx];
+		_clients[cidx] = NULL;
+
+		// careful: remove player after the client as been removed. This
+		// prevents write error (remove_player advertises the quit event)
+		// in case the socket as already been closed client-side.
 		if (_players[cidx] != NULL) {
 			remove_player(cidx);
 		}
-
-		delete _clients[cidx];
-		_clients[cidx] = NULL;
 
 		_free_slots.push_front(cidx);
 	}
@@ -186,6 +189,15 @@ namespace TEA {
 		assert(_players[cidx] == NULL);
 #endif
 		_players[cidx] = new Player();
+
+		// tell everybody about the new player
+		char msg[MAX_MSG_LEN];
+		sprintf(msg, "JOIN %u\n", cidx);
+		for (unsigned int i = 0; i < _maxnclients; i++) {
+			if (_clients[i] != NULL) {
+				_clients[i]->send_msg(msg);
+			}
+		}
 	}
 
 
@@ -196,6 +208,15 @@ namespace TEA {
 #endif
 		delete _players[cidx];
 		_players[cidx] = NULL;
+
+		// tell everybody about the player leaving
+		char msg[MAX_MSG_LEN];
+		sprintf(msg, "LEAVE %u\n", cidx);
+		for (unsigned int i = 0; i < _maxnclients; i++) {
+			if (_clients[i] != NULL) {
+				_clients[i]->send_msg(msg);
+			}
+		}
 	}
 
 
