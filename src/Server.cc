@@ -353,6 +353,9 @@ namespace TEA {
 		unsigned int flag;
 		unsigned int cookienum;
 
+		ssize_t size;
+		char msg[MAX_MSG_LEN];
+
 		if (sscanf(dgram, "COOKIE %u", &cookienum)) {
 
 			std::map<int, int>::iterator it = _handshakes.find(cookienum);
@@ -386,17 +389,22 @@ namespace TEA {
 			}
 
 			// make sure the id is owned by the right guy
-			if (_clients[id]->is(from)) {
-				// broadcast flag
-				for (unsigned int i = 0; i < _maxnclients; i++) {
-					if (_clients[i] != NULL) {
-						_clients[i]->send_msg(dgram);
-					}
-				}
+			if (!_clients[id]->is(from)) {
+				fprintf(stderr, "Someone trying to impersonate #%u!\n", id);
+				return -1;
 			}
 
-			else {
-				fprintf(stderr, "Someone trying to impersonate #%u!\n", id);
+			size = sprintf(msg, "%u:%u\n", id, flag);
+
+			// broadcast flag
+			for (unsigned int i = 0; i < _maxnclients; i++) {
+				if (_clients[i] != NULL) {
+					const sockaddr_in &addr = _clients[i]->get_addr();
+					sendto(
+						_udp_socket, msg, size, 0,
+						(sockaddr *) &addr, sizeof addr
+					);
+				}
 			}
 		}
 
