@@ -20,6 +20,8 @@ static int udp_sock;
 
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
+int  handle_tcp_msg();
+int  handle_udp_msg();
 
 
 int main(int argc, char *argv[])
@@ -46,13 +48,11 @@ int main(int argc, char *argv[])
 		if (poll(fds, 2, -1) > 0) {
 
 			if (fds[0].revents & POLLIN) {
-				// handle tcp messages here
-				;
+				handle_tcp_msg();
 			}
 
 			if (fds[1].revents & POLLIN) {
-				// handle udp messages here
-				;
+				handle_udp_msg();
 			}
 		}
 
@@ -125,4 +125,16 @@ int handle_handshake(void)
 	}
 
 	return id;
+}
+
+
+int handle_tcp_msg(void)
+{
+	return 0;
+}
+
+
+int handle_udp_msg(void)
+{
+	return 0;
 }
