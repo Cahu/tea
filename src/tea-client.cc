@@ -130,6 +130,29 @@ int handle_handshake(void)
 
 int handle_tcp_msg(void)
 {
+	ssize_t size;
+	char msg[MAX_MSG_LEN];
+
+	unsigned int id;
+
+	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	if (size <= 0) {
+		return -1;
+	}
+	msg[size] = '\0';
+
+	if (1 == sscanf(msg, "JOIN %u", &id)) {
+		;
+	}
+
+	if (1 == sscanf(msg, "LEAVE %u", &id)) {
+		;
+	}
+
+	else {
+		fprintf(stderr, "Can't make sence of msg from server: %s\n", msg);
+	}
+
 	return 0;
 }
 
