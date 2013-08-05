@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include "Player.hh"
+
 #define PORT 9999
 #define MAX_MSG_LEN 64
 
@@ -15,13 +17,20 @@
 		exit(EXIT_FAILURE); \
 	}
 
+using TEA::Player;
+
 static int tcp_sock;
 static int udp_sock;
+static Player *players;
+static Game *game;
 
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
 int  handle_tcp_msg();
 int  handle_udp_msg();
+
+void add_player(unsigned int);
+void remove_player(unsigned int);
 
 
 int main(int argc, char *argv[])
@@ -33,6 +42,13 @@ int main(int argc, char *argv[])
 	}
 
 	int id = handle_handshake();
+	if (id < 0) {
+		fprintf(stderr, "Error during handshake\n");
+		close(tcp_sock);
+		close(udp_sock);
+		exit(EXIT_FAILURE);
+	}
+
 	printf("got ID #%d\n", id);
 
 	// init structures for poll()
@@ -90,6 +106,18 @@ void init_connect(const char *addr, unsigned short port)
 }
 
 
+void add_player(unsigned int pidx)
+{
+	;
+}
+
+
+void remove_player(unsigned int pidx)
+{
+	;
+}
+
+
 int handle_handshake(void)
 {
 	int id = -1;
@@ -143,11 +171,11 @@ int handle_tcp_msg(void)
 	msg[size] = '\0';
 
 	if (1 == sscanf(msg, "JOIN %u", &id)) {
-		;
+		add_player(id);
 	}
 
 	if (1 == sscanf(msg, "LEAVE %u", &id)) {
-		;
+		remove_player(id);
 	}
 
 	else {
