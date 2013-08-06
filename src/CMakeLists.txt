@@ -7,5 +7,5 @@ add_executable (tea-server
 	tea-server.cc Server.cc Client.cc Player.cc utils.cc
 )
 
-target_link_libraries(tea-server ${OPENGL_LIBRARY})
-target_link_libraries(tea-client ${OPENGL_LIBRARY})
+target_link_libraries(tea-server)
+target_link_libraries(tea-client ${OPENGL_LIBRARY} ${SDL_LIBRARY})

@@ -11,6 +11,9 @@
 	#include <assert.h>
 #endif
 
+#include <GL/gl.h>
+#include <SDL/SDL.h>
+
 #include "Player.hh"
 #include "utils.hh"
 
@@ -24,6 +27,9 @@
 	}
 
 using TEA::Player;
+
+unsigned int WIDTH   = 800;
+unsigned int HEIGHT  = 600;
 
 static int tcp_sock;
 static int udp_sock;
@@ -71,6 +77,14 @@ int main(int argc, char *argv[])
 	fds[1].fd     = udp_sock;
 	fds[1].events = POLLIN;
 
+	tcp_send(tcp_sock, "JOIN\n", sizeof "JOIN\n", 0);
+	sleep(1);
+	tcp_send(tcp_sock, "LEAVE\n", sizeof "LEAVE\n", 0);
+	sleep(1);
+	tcp_send(tcp_sock, "JOIN\n", sizeof "JOIN\n", 0);
+	sleep(1);
+	tcp_send(tcp_sock, "QUIT\n", sizeof "QUIT\n", 0);
+
 	while (1) {
 
 		// handle events on sockets
@@ -110,13 +124,33 @@ int main(int argc, char *argv[])
 
 void init_sdl(void)
 {
-	;
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		fprintf(stderr, "Can't init sdl.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+	if (SDL_SetVideoMode(WIDTH, HEIGHT, 0, SDL_OPENGL) < 0) {
+		fprintf(stderr, "Can't set video mode.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 
 void init_opengl(void)
 {
-	;
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearDepth(1.0);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_DEPTH_TEST);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
+
+	glMatrixMode(GL_MODELVIEW);
 }
 
 
