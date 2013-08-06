@@ -30,6 +30,10 @@ static int udp_sock;
 
 static std::vector<Player *> players;
 
+
+void init_sdl();
+void init_opengl();
+
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
 int  handle_tcp_msg();
@@ -41,6 +45,9 @@ void remove_player(unsigned int);
 
 int main(int argc, char *argv[])
 {
+	init_sdl();
+	init_opengl();
+
 	if (argc < 2) {
 		init_connect("127.0.0.1", PORT);
 	} else {
@@ -100,6 +107,17 @@ int main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
+
+void init_sdl(void)
+{
+	;
+}
+
+
+void init_opengl(void)
+{
+	;
+}
 
 
 void init_connect(const char *addr, unsigned short port)
