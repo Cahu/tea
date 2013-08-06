@@ -218,7 +218,7 @@ int handle_tcp_msg(void)
 		add_player(id);
 	}
 
-	if (1 == sscanf(msg, "LEAVE %u", &id)) {
+	else if (1 == sscanf(msg, "LEAVE %u", &id)) {
 		remove_player(id);
 	}
 
