@@ -6,6 +6,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#ifndef NDEBUG
+	#include <assert.h>
+#endif
+
 #include "Player.hh"
 #include "utils.hh"
 
