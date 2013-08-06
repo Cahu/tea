@@ -16,8 +16,8 @@
 
 
 namespace TEA {
-	char SERVER_FULL[]  = "FULL\n";
-	char HANDSHAKE_OK[] = "HANDSHAKE OK\n";
+	char SERVER_FULL[]  = "FULL";
+	char HANDSHAKE_OK[] = "HANDSHAKE OK";
 
 	Server::Server(int port, unsigned int maxnclients)
 	{
