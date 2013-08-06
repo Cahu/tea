@@ -1,6 +1,7 @@
 #include "utils.hh"
 
-#include <arpa/inet.h>
+#include <cstdio>
+#include <cstring>
 
 
 /* These functions are used to take care of annoying properties of TCP packets
@@ -20,13 +21,18 @@
 
 ssize_t sendall(int sock, const char *buff, size_t len, int flags)
 {
-	size_t size, sent = 0;
+	ssize_t size;
+	size_t sent = 0;
+
 
 	do {
 		size = send(sock, buff+sent, len-sent, flags);
 
-		if (size < 1) {
-			return sent;
+		if (size < 0) {
+			perror("send");
+			return -1;
+		} else if (size == 0) {
+			break;
 		}
 
 		sent += size;
@@ -39,13 +45,17 @@ ssize_t sendall(int sock, const char *buff, size_t len, int flags)
 
 size_t recvall(int sock, char *buff, size_t len, int flags)
 {
-	size_t size, got = 0;
+	ssize_t size;
+	size_t got = 0;
 
 	do {
 		size = recv(sock, buff+got, len-got, flags);
 
-		if (size < 1) {
-			return got;
+		if (size < 0) {
+			perror("recv");
+			return -1;
+		} else if (size == 0) {
+			break;
 		}
 
 		got += size;
@@ -56,38 +66,39 @@ size_t recvall(int sock, char *buff, size_t len, int flags)
 }
 
 
-ssize_t tcp_send(int sock, const char *buff, unsigned short len, int flags)
+ssize_t tcp_send(int sock, const char *buff, uint16_t len, int flags)
 {
-	size_t size;
-	unsigned short sz = htons(len);
+	uint16_t sz = htons(len);
 
-	if (1 > (size = sendall(sock, (char *) &sz, sizeof sz, flags))) {
-		return size;
-	}
+	char *tmp = new char[len + sizeof sz];
+	memcpy(tmp, (char *) &sz, sizeof sz);
+	memcpy(tmp + sizeof sz, buff, len);
 
-	size = sendall(sock, buff, len, flags);
-
-	return size;
+	return sendall(sock, tmp, len + sizeof sz, flags);
 }
 
 
-ssize_t tcp_recv(int sock, char *buff, unsigned short len, int flags)
+ssize_t tcp_recv(int sock, char *buff, uint16_t len, int flags)
 {
 	ssize_t size;
-	unsigned short pktsz;
+	uint16_t sz;
 
 	// first two bytes are the packet length
-	if (1 > (size = recvall(sock, (char *) &pktsz, sizeof pktsz, flags))) {
+	if (1 > (size = recvall(sock, (char *) &sz, sizeof sz, flags))) {
+		fprintf(stderr, "Can't get size of message\n");
 		return size;
 	}
 
-	pktsz = ntohs(pktsz);
+	sz = ntohs(sz);
 
-	if (pktsz > len) {
+	if (sz > len) {
+		fprintf(
+			stderr, "Message size (%hu) > buffer size (%hu)!\n", sz, len
+		);
 		return -1;
 	}
 
-	size = recv(sock, buff, pktsz, flags);
+	size = recvall(sock, buff, sz, flags);
 
 	return size;
 }

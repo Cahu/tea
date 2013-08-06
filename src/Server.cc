@@ -339,8 +339,9 @@ namespace TEA {
 
 		_handshakes[cookie] = sock;
 
-		sprintf(msg, "COOKIE %d\n", cookie);
-		tcp_send(sock, msg, strlen(msg), cookie);
+		sprintf(msg, "COOKIE %d", cookie);
+		printf("Sending cookie %d\n", cookie);
+		tcp_send(sock, msg, strlen(msg), 0);
 	}
 
 

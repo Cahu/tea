@@ -64,11 +64,17 @@ int main(int argc, char *argv[])
 		if (poll(fds, 2, -1) > 0) {
 
 			if (fds[0].revents & POLLIN) {
-				handle_tcp_msg();
+				if (-1 == handle_tcp_msg()) {
+					fprintf(stderr, "Connexion with server lost\n");
+					break;
+				}
 			}
 
 			if (fds[1].revents & POLLIN) {
-				handle_udp_msg();
+				if (-1 == handle_udp_msg()) {
+					fprintf(stderr, "Connexion with server lost\n");
+					break;
+				}
 			}
 		}
 
@@ -128,7 +134,7 @@ int handle_handshake(void)
 	// get a cookie
 	size = tcp_recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size < 0) {
-		perror("recv");
+		fprintf(stderr, "Can't get cookie\n");
 		return -1;
 	}
 	msg[size] = '\0';
@@ -138,13 +144,14 @@ int handle_handshake(void)
 	unsigned int cookienum;
 	if (1 == sscanf(msg, "COOKIE %u", &cookienum)) {
 		size = sprintf(msg, "COOKIE %u", cookienum);
+		fprintf(stderr, "got cookie %u\n", cookienum);
 		send(udp_sock, msg, size, 0);
 	}
 
 	// get an ID
 	size = tcp_recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size < 0) {
-		perror("recv");
+		fprintf(stderr, "Can't get an ID\n");
 		return -1;
 	}
 	msg[size] = '\0';
