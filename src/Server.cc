@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <unistd.h>
 
+#include "utils.hh"
+
 #ifndef NDEBUG
 	#include <assert.h>
 #endif
@@ -272,7 +274,7 @@ namespace TEA {
 			if (!full()) {
 				send_cookie(csock);
 			} else {
-				send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
+				tcp_send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
 			}
 		}
 	}
@@ -301,7 +303,7 @@ namespace TEA {
 	{
 		char msg[MAX_MSG_LEN];
 		int csock = _clients[cidx]->get_sock();
-		ssize_t size = recv(csock, msg, 64-1, 0);
+		ssize_t size = tcp_recv(csock, msg, 64-1, 0);
 
 		if (size > 0) {
 			msg[size] = '\0';
@@ -338,7 +340,7 @@ namespace TEA {
 		_handshakes[cookie] = sock;
 
 		sprintf(msg, "COOKIE %d\n", cookie);
-		send(sock, msg, strlen(msg), cookie);
+		tcp_send(sock, msg, strlen(msg), cookie);
 	}
 
 
@@ -397,7 +399,7 @@ namespace TEA {
 				} else {
 					// unfortunately, someone else was faster with the
 					// handshake...
-					send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
+					tcp_send(csock, SERVER_FULL, sizeof SERVER_FULL, 0);
 				}
 			}
 		}

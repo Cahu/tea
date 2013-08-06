@@ -1,4 +1,5 @@
 #include "Client.hh"
+#include "utils.hh"
 
 #include <cstdio>
 #include <cstring>
@@ -42,23 +43,8 @@ namespace TEA {
 
 	int Client::send_msg(const char *msg) const
 	{
-		ssize_t tmp;
-		size_t sent = 0;
 		size_t len = strlen(msg);
-
-		do {
-			tmp = send(_tcp_sock, msg, len-sent, 0);
-
-			if (tmp < 0) {
-				perror("send");
-				return -1;
-			}
-
-			sent += tmp;
-
-		} while (sent < len);
-
-		return 0;
+		return ::tcp_send(_tcp_sock, msg, len, 0);
 	}
 
 

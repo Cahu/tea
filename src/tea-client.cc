@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 
 #include "Player.hh"
+#include "utils.hh"
 
 #define PORT 9999
 #define MAX_MSG_LEN 64
@@ -22,7 +23,6 @@ using TEA::Player;
 static int tcp_sock;
 static int udp_sock;
 static Player *players;
-static Game *game;
 
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
@@ -126,7 +126,7 @@ int handle_handshake(void)
 	char msg[MAX_MSG_LEN];
 
 	// get a cookie
-	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	size = tcp_recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size < 0) {
 		perror("recv");
 		return -1;
@@ -142,7 +142,7 @@ int handle_handshake(void)
 	}
 
 	// get an ID
-	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	size = tcp_recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size < 0) {
 		perror("recv");
 		return -1;
@@ -164,7 +164,7 @@ int handle_tcp_msg(void)
 
 	unsigned int id;
 
-	size = recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
+	size = tcp_recv(tcp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size <= 0) {
 		return -1;
 	}
@@ -194,7 +194,7 @@ int handle_udp_msg(void)
 	unsigned int id;
 	unsigned int flags;
 
-	size = recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
+	size = tcp_recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size <= 0) {
 		return -1;
 	}
