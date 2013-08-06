@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
+#include <vector>
 
 #include <poll.h>
 #include <arpa/inet.h>
@@ -26,7 +27,8 @@ using TEA::Player;
 
 static int tcp_sock;
 static int udp_sock;
-static Player *players;
+
+static std::vector<Player *> players;
 
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
@@ -118,13 +120,26 @@ void init_connect(const char *addr, unsigned short port)
 
 void add_player(unsigned int pidx)
 {
-	;
+	if (players.size() < pidx+1) {
+		players.resize(pidx+1, NULL);
+	}
+
+#ifndef NDEBUG
+	assert(players[pidx] == NULL);
+#endif
+
+	players[pidx] = new Player;
 }
 
 
 void remove_player(unsigned int pidx)
 {
-	;
+	if (players.size() < pidx+1 || players[pidx] == NULL) {
+		fprintf(stderr, "Trying to remove a player we don't know about!\n");
+		return;
+	}
+
+	players[pidx] = NULL;
 }
 
 
