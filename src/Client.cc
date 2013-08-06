@@ -44,7 +44,7 @@ namespace TEA {
 	int Client::send_msg(const char *msg) const
 	{
 		size_t len = strlen(msg);
-		return ::tcp_send(_tcp_sock, msg, len, 0);
+		return tcp_send(_tcp_sock, msg, len, 0);
 	}
 
 
