@@ -249,6 +249,7 @@ void remove_player(unsigned int pidx)
 		return;
 	}
 
+	delete players[pidx];
 	players[pidx] = NULL;
 
 	// server just removed us from the game
