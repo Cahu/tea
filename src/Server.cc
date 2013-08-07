@@ -200,7 +200,7 @@ namespace TEA {
 		_players[cidx] = new Player();
 
 		// tell everybody about the new player
-		sprintf(msg, "JOIN %u\n", cidx);
+		sprintf(msg, CMD_JOIN " %u", cidx);
 		for (unsigned int i = 0; i < _maxnclients; i++) {
 			if (_clients[i] != NULL) {
 				_clients[i]->send_msg(msg);
@@ -219,7 +219,7 @@ namespace TEA {
 
 		// tell everybody about the player leaving
 		char msg[MAX_MSG_LEN];
-		sprintf(msg, "LEAVE %u\n", cidx);
+		sprintf(msg, CMD_LEAVE " %u", cidx);
 		for (unsigned int i = 0; i < _maxnclients; i++) {
 			if (_clients[i] != NULL) {
 				_clients[i]->send_msg(msg);
@@ -356,7 +356,7 @@ namespace TEA {
 		int nplayers = 0;
 
 		std::stringstream ss;
-		ss << "PLIST ";
+		ss << CMD_PLIST " ";
 
 		for (unsigned int i = 0; i < _maxnclients; i++) {
 			if (_players[i] != NULL) {
@@ -379,18 +379,18 @@ namespace TEA {
 
 	int Server::process_client_msg(int cidx, const char *msg)
 	{
-		if (NULL != strstr(msg, "JOIN")) {
-			fprintf(stderr, "JOIN\n");
+		if (NULL != strstr(msg, CMD_JOIN)) {
+			fprintf(stderr, CMD_JOIN "\n");
 			add_player(cidx);
 		}
 
-		else if (NULL != strstr(msg, "LEAVE")) {
-			fprintf(stderr, "LEAVE\n");
+		else if (NULL != strstr(msg, CMD_LEAVE)) {
+			fprintf(stderr, CMD_LEAVE "\n");
 			remove_player(cidx);
 		}
 
-		else if (NULL != strstr(msg, "QUIT")) {
-			fprintf(stderr, "QUIT\n");
+		else if (NULL != strstr(msg, CMD_QUIT)) {
+			fprintf(stderr, CMD_QUIT "\n");
 			remove_client(cidx);
 		}
 

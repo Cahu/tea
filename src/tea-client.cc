@@ -16,6 +16,7 @@
 
 #include "Player.hh"
 #include "utils.hh"
+#include "cmds.hh"
 
 #define PORT 9999
 #define MAX_MSG_LEN 64
@@ -248,15 +249,15 @@ int handle_tcp_msg(void)
 	}
 	msg[size] = '\0';
 
-	if (1 == sscanf(msg, "JOIN %u", &id)) {
+	if (1 == sscanf(msg, CMD_JOIN " %u", &id)) {
 		add_player(id);
 	}
 
-	else if (1 == sscanf(msg, "LEAVE %u", &id)) {
+	else if (1 == sscanf(msg, CMD_LEAVE " %u", &id)) {
 		remove_player(id);
 	}
 
-	else if (strstr(msg, "PLIST ")) {
+	else if (strstr(msg, CMD_PLIST)) {
 		puts(msg);
 	}
 
