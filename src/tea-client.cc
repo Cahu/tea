@@ -135,7 +135,9 @@ int main(int argc, char *argv[])
 			goto END;
 		}
 
-		fprintf(stderr, "flags: %hu\n", flags);
+		if (playing) {
+			send_flags(flags);
+		}
 
 		// update state
 		;
@@ -232,6 +234,11 @@ void add_player(unsigned int pidx)
 #endif
 
 	players[pidx] = new Player;
+
+	// server just added us as a player
+	if (pidx == id) {
+		playing = 1;
+	}
 }
 
 
@@ -243,6 +250,11 @@ void remove_player(unsigned int pidx)
 	}
 
 	players[pidx] = NULL;
+
+	// server just removed us from the game
+	if (pidx == id) {
+		playing = 0;
+	}
 }
 
 
@@ -395,11 +407,26 @@ int handle_udp_msg(void)
 	msg[size] = '\0';
 
 	if (2 == sscanf(msg, "%u:%u", &id, &flags)) {
-		;
+		puts(msg);
 	}
 
 	else {
 		fprintf(stderr, "Can't make sence of msg from server: %s\n", msg);
+	}
+
+	return 0;
+}
+
+
+int send_flags(flag_t flags)
+{
+	int size;
+	char flagmsg[24];
+
+	size = sprintf(flagmsg, "%d:%hu", id, flags);
+
+	if (1 > send(udp_sock, flagmsg, size, 0)) {
+		return -1;
 	}
 
 	return 0;

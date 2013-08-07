@@ -454,7 +454,13 @@ namespace TEA {
 				return -1;
 			}
 
-			size = sprintf(msg, "%u:%u\n", id, flag);
+			// discard flags from clients that are not playing
+			if (_players[id] == NULL) {
+				fprintf(stderr, "Client #%u not playing sent flags.\n",id);
+				return -1;
+			}
+
+			size = sprintf(msg, "%u:%u", id, flag);
 
 			// broadcast flag
 			for (unsigned int i = 0; i < _maxnclients; i++) {
