@@ -52,6 +52,8 @@ void remove_player(unsigned int);
 
 int main(int argc, char *argv[])
 {
+	int exitval = EXIT_SUCCESS;
+
 	init_sdl();
 	init_opengl();
 
@@ -64,9 +66,8 @@ int main(int argc, char *argv[])
 	int id = handle_handshake();
 	if (id < 0) {
 		fprintf(stderr, "Error during handshake\n");
-		close(tcp_sock);
-		close(udp_sock);
-		exit(EXIT_FAILURE);
+		exitval = EXIT_FAILURE;
+		goto END;
 	}
 
 	printf("got ID #%d\n", id);
@@ -89,19 +90,19 @@ int main(int argc, char *argv[])
 	while (1) {
 
 		// handle events on sockets
-		if (poll(fds, 2, -1) > 0) {
+		while (poll(fds, 2, 0) > 0) {
 
 			if (fds[0].revents & POLLIN) {
 				if (-1 == handle_tcp_msg()) {
 					fprintf(stderr, "Connexion with server lost\n");
-					break;
+					goto END;
 				}
 			}
 
 			if (fds[1].revents & POLLIN) {
 				if (-1 == handle_udp_msg()) {
 					fprintf(stderr, "Connexion with server lost\n");
-					break;
+					goto END;
 				}
 			}
 		}
@@ -116,10 +117,11 @@ int main(int argc, char *argv[])
 		;
 	}
 
+	END:
 	close(tcp_sock);
 	close(udp_sock);
 
-	exit(EXIT_SUCCESS);
+	exit(exitval);
 }
 
 
