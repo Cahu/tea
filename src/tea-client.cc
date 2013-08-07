@@ -111,6 +111,10 @@ int main(int argc, char *argv[])
 
 		// events on mouse/keyboard
 		flags = handle_sdl_events();
+		if (flags == -1) {
+			goto END;
+		}
+
 		fprintf(stderr, "flags: %hu\n", flags);
 
 		// update state
