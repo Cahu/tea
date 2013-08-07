@@ -40,6 +40,7 @@ static std::vector<Player *> players;
 
 void init_sdl();
 void init_opengl();
+void draw_scene();
 
 void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 		;
 
 		// draw
-		;
+		draw_scene();
 
 		// sleep
 		SDL_Delay(10);
@@ -175,6 +176,24 @@ void init_opengl(void)
 	glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
 
 	glMatrixMode(GL_MODELVIEW);
+}
+
+
+void draw_scene(void)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glColor3f(1, 1, 1);
+
+	glBegin(GL_QUADS);
+		glVertex3f(100, 100, 0);
+		glVertex3f(300, 100, 0);
+		glVertex3f(300, 300, 0);
+		glVertex3f(100, 300, 0);
+	glEnd();
+
+	SDL_GL_SwapBuffers();
 }
 
 
