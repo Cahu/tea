@@ -36,6 +36,9 @@ unsigned int WIDTH  = 800;
 unsigned int HEIGHT = 600;
 
 int id;
+char playing;
+flag_t flags;
+
 static int tcp_sock;
 static int udp_sock;
 
@@ -59,6 +62,10 @@ void remove_player(unsigned int);
 int main(int argc, char *argv[])
 {
 	int exitval = EXIT_SUCCESS;
+
+	// init state variables
+	flags = 0;
+	playing = 0;
 
 	init_sdl();
 	init_opengl();
@@ -84,10 +91,6 @@ int main(int argc, char *argv[])
 	fds[0].events = POLLIN;
 	fds[1].fd     = udp_sock;
 	fds[1].events = POLLIN;
-
-	//
-	flag_t flags;
-	flags = 0;
 
 	// main loop
 	while (1) {
