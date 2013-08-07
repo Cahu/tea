@@ -68,13 +68,17 @@ size_t recvall(int sock, char *buff, size_t len, int flags)
 
 ssize_t tcp_send(int sock, const char *buff, uint16_t len, int flags)
 {
+	ssize_t size;
 	uint16_t sz = htons(len);
 
 	char *tmp = new char[len + sizeof sz];
 	memcpy(tmp, (char *) &sz, sizeof sz);
 	memcpy(tmp + sizeof sz, buff, len);
 
-	return sendall(sock, tmp, len + sizeof sz, flags);
+	size = sendall(sock, tmp, len + sizeof sz, flags);
+
+	delete[] tmp;
+	return size;
 }
 
 
