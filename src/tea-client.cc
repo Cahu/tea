@@ -372,7 +372,7 @@ int handle_udp_msg(void)
 	unsigned int id;
 	unsigned int flags;
 
-	size = tcp_recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
+	size = recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size <= 0) {
 		return -1;
 	}
