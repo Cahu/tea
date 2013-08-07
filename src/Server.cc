@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "utils.hh"
+#include "cmds.hh"
 
 #ifndef NDEBUG
 	#include <assert.h>
