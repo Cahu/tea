@@ -54,6 +54,7 @@ namespace TEA {
 
 
 		int send_cookie(int);
+		int send_player_list(int);
 
 		void add_client(int csock, const struct sockaddr_in &caddr);
 		void remove_client(int cidx);

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
+#include <sstream>
 
 #include "utils.hh"
 
@@ -152,6 +153,9 @@ namespace TEA {
 		char msg[MAX_MSG_LEN];
 		sprintf(msg, "ID %d\n", id);
 		_clients[id]->send_msg(msg);
+
+		// send player list to new client
+		Server::send_player_list(id);
 
 #ifndef NDEBUG
 		fprintf(stderr, "New client id: %d\n", id);
@@ -344,6 +348,32 @@ namespace TEA {
 		sprintf(msg, "COOKIE %d", cookie);
 		printf("Sending cookie %d\n", cookie);
 		return tcp_send(sock, msg, strlen(msg), 0);
+	}
+
+
+	int Server::send_player_list(int cidx)
+	{
+		int nplayers = 0;
+
+		std::stringstream ss;
+		ss << "PLIST ";
+
+		for (unsigned int i = 0; i < _maxnclients; i++) {
+			if (_players[i] != NULL) {
+				const Player *p = _players[i];
+				//format: id:x:y;
+				ss << i << ":"
+				   << p->get_xpos() << ":"
+				   << p->get_ypos() << ";";
+				nplayers++;
+			}
+		}
+
+		if (nplayers) {
+			return _clients[cidx]->send_msg(ss.str().c_str());
+		}
+
+		return 0;
 	}
 
 
