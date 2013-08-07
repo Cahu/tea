@@ -51,13 +51,13 @@ namespace TEA {
 	}
 
 
-	double Player::get_xpos()
+	double Player::get_xpos() const
 	{
 		return _xpos;
 	}
 
 
-	double Player::get_ypos()
+	double Player::get_ypos() const
 	{
 		return _ypos;
 	}

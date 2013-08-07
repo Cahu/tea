@@ -21,7 +21,7 @@ namespace TEA {
 
 		// accessors
 		void set_flags(int);
-		double get_xpos();
-		double get_ypos();
+		double get_xpos() const;
+		double get_ypos() const;
 	};
 }
