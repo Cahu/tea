@@ -35,6 +35,7 @@ typedef short flag_t;
 unsigned int WIDTH  = 800;
 unsigned int HEIGHT = 600;
 
+int id;
 static int tcp_sock;
 static int udp_sock;
 
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
 		init_connect(argv[1], PORT);
 	}
 
-	int id = handle_handshake();
+	id = handle_handshake();
 	if (id < 0) {
 		fprintf(stderr, "Error during handshake\n");
 		exitval = EXIT_FAILURE;
