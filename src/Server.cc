@@ -194,10 +194,6 @@ namespace TEA {
 	{
 		char msg[MAX_MSG_LEN];
 
-#ifndef NDEBUG
-		assert(_players[cidx] == NULL);
-#endif
-
 		_players[cidx] = new Player();
 
 		// tell everybody about the new player
@@ -212,9 +208,6 @@ namespace TEA {
 
 	void Server::remove_player(int cidx)
 	{
-#ifndef NDEBUG
-		assert(_players[cidx] != NULL);
-#endif
 		delete _players[cidx];
 		_players[cidx] = NULL;
 
@@ -382,12 +375,22 @@ namespace TEA {
 	{
 		if (NULL != strstr(msg, CMD_JOIN)) {
 			fprintf(stderr, CMD_JOIN "\n");
-			add_player(cidx);
+
+			if (_players[cidx] != NULL) {
+				fprintf(stderr, "Client already in game\n");
+			} else {
+				add_player(cidx);
+			}
 		}
 
 		else if (NULL != strstr(msg, CMD_LEAVE)) {
 			fprintf(stderr, CMD_LEAVE "\n");
-			remove_player(cidx);
+
+			if (_players[cidx] == NULL) {
+				fprintf(stderr, "Client not in game\n");
+			} else {
+				remove_player(cidx);
+			}
 		}
 
 		else if (NULL != strstr(msg, CMD_QUIT)) {
