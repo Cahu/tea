@@ -32,31 +32,47 @@ using TEA::Player;
 
 typedef short flag_t;
 
+
+
+// config variables
 unsigned int WIDTH  = 800;
 unsigned int HEIGHT = 600;
 
+// state variables
 int id;
 char playing;
 flag_t flags;
 
+// network stuff
 static int tcp_sock;
 static int udp_sock;
 
+// objects collections
 static std::vector<Player *> players;
 
 
+
+
+// graphic functions
 void init_sdl();
 void init_opengl();
 void draw_scene();
 
+// local events
+flag_t handle_sdl_events();
+
+// network function
 void init_connect(const char *, unsigned short);
 int handle_handshake(void);
 int handle_tcp_msg();
 int handle_udp_msg();
-flag_t handle_sdl_events();
+int send_flags(flag_t);
 
+// objects management
 void add_player(unsigned int);
 void remove_player(unsigned int);
+
+
 
 
 int main(int argc, char *argv[])
