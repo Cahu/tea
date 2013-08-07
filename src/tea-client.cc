@@ -79,14 +79,10 @@ int main(int argc, char *argv[])
 	fds[1].fd     = udp_sock;
 	fds[1].events = POLLIN;
 
-	tcp_send(tcp_sock, "JOIN\n", sizeof "JOIN\n", 0);
-	sleep(1);
-	tcp_send(tcp_sock, "LEAVE\n", sizeof "LEAVE\n", 0);
-	sleep(1);
-	tcp_send(tcp_sock, "JOIN\n", sizeof "JOIN\n", 0);
-	sleep(1);
-	tcp_send(tcp_sock, "QUIT\n", sizeof "QUIT\n", 0);
+	// opengl and sdl stuff
+	SDL_Event event;
 
+	// main loop
 	while (1) {
 
 		// handle events on sockets
@@ -107,6 +103,31 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		// events on mouse/keyboard
+		while (SDL_PollEvent(&event)) {
+
+			if (event.type == SDL_KEYDOWN) {
+				switch (event.key.keysym.sym) {
+					case SDLK_j:
+						tcp_send(tcp_sock, CMD_JOIN, sizeof CMD_JOIN, 0);
+						break;
+					case SDLK_l:
+						tcp_send(tcp_sock, CMD_LEAVE, sizeof CMD_LEAVE, 0);
+						break;
+					case SDLK_k:
+						tcp_send(tcp_sock, CMD_QUIT, sizeof CMD_QUIT, 0);
+						goto END;
+					default:
+						break;
+				}
+			}
+
+			else if (event.type == SDL_QUIT) {
+				tcp_send(tcp_sock, CMD_QUIT, sizeof CMD_QUIT, 0);
+				goto END;
+			}
+		}
+
 		// update state
 		;
 
@@ -114,7 +135,7 @@ int main(int argc, char *argv[])
 		;
 
 		// sleep
-		;
+		SDL_Delay(10);
 	}
 
 	END:
