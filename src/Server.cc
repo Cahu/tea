@@ -187,13 +187,15 @@ namespace TEA {
 
 	void Server::add_player(int cidx)
 	{
+		char msg[MAX_MSG_LEN];
+
 #ifndef NDEBUG
 		assert(_players[cidx] == NULL);
 #endif
+
 		_players[cidx] = new Player();
 
 		// tell everybody about the new player
-		char msg[MAX_MSG_LEN];
 		sprintf(msg, "JOIN %u\n", cidx);
 		for (unsigned int i = 0; i < _maxnclients; i++) {
 			if (_clients[i] != NULL) {
@@ -328,7 +330,7 @@ namespace TEA {
 	}
 
 
-	void Server::send_cookie(int sock)
+	int Server::send_cookie(int sock)
 	{
 		int cookie;
 		char msg[MAX_MSG_LEN];
@@ -341,7 +343,7 @@ namespace TEA {
 
 		sprintf(msg, "COOKIE %d", cookie);
 		printf("Sending cookie %d\n", cookie);
-		tcp_send(sock, msg, strlen(msg), 0);
+		return tcp_send(sock, msg, strlen(msg), 0);
 	}
 
 

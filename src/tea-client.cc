@@ -256,6 +256,10 @@ int handle_tcp_msg(void)
 		remove_player(id);
 	}
 
+	else if (strstr(msg, "PLIST ")) {
+		puts(msg);
+	}
+
 	else {
 		fprintf(stderr, "Can't make sence of msg from server: %s\n", msg);
 	}

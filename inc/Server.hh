@@ -53,7 +53,7 @@ namespace TEA {
 		int process_client_dgram(const struct sockaddr_in &, const char *);
 
 
-		void send_cookie(int sock);
+		int send_cookie(int);
 
 		void add_client(int csock, const struct sockaddr_in &caddr);
 		void remove_client(int cidx);
