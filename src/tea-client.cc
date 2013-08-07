@@ -17,6 +17,7 @@
 #include "Player.hh"
 #include "utils.hh"
 #include "cmds.hh"
+#include "keys.hh"
 
 #define PORT 9999
 #define MAX_MSG_LEN 64
@@ -28,6 +29,8 @@
 	}
 
 using TEA::Player;
+
+typedef short flag_t;
 
 unsigned int WIDTH   = 800;
 unsigned int HEIGHT  = 600;
@@ -46,6 +49,7 @@ void init_connect(const char *, unsigned short);
 int  handle_handshake(void);
 int  handle_tcp_msg();
 int  handle_udp_msg();
+flag_t handle_sdl_events();
 
 void add_player(unsigned int);
 void remove_player(unsigned int);
@@ -80,8 +84,9 @@ int main(int argc, char *argv[])
 	fds[1].fd     = udp_sock;
 	fds[1].events = POLLIN;
 
-	// opengl and sdl stuff
-	SDL_Event event;
+	//
+	flag_t flags;
+	flags = 0;
 
 	// main loop
 	while (1) {
@@ -105,29 +110,8 @@ int main(int argc, char *argv[])
 		}
 
 		// events on mouse/keyboard
-		while (SDL_PollEvent(&event)) {
-
-			if (event.type == SDL_KEYDOWN) {
-				switch (event.key.keysym.sym) {
-					case SDLK_j:
-						tcp_send(tcp_sock, CMD_JOIN, sizeof CMD_JOIN, 0);
-						break;
-					case SDLK_l:
-						tcp_send(tcp_sock, CMD_LEAVE, sizeof CMD_LEAVE, 0);
-						break;
-					case SDLK_k:
-						tcp_send(tcp_sock, CMD_QUIT, sizeof CMD_QUIT, 0);
-						goto END;
-					default:
-						break;
-				}
-			}
-
-			else if (event.type == SDL_QUIT) {
-				tcp_send(tcp_sock, CMD_QUIT, sizeof CMD_QUIT, 0);
-				goto END;
-			}
-		}
+		flags = handle_sdl_events();
+		fprintf(stderr, "flags: %hu\n", flags);
 
 		// update state
 		;
@@ -275,6 +259,67 @@ int handle_handshake(void)
 	}
 
 	return id;
+}
+
+
+flag_t handle_sdl_events(void)
+{
+	SDL_Event event;
+	static flag_t flags = 0;
+
+	while (SDL_PollEvent(&event)) {
+
+		if (event.type == SDL_KEYDOWN) {
+			switch (event.key.keysym.sym) {
+				case SDLK_j:
+					tcp_send(tcp_sock, CMD_JOIN, sizeof CMD_JOIN, 0);
+					break;
+				case SDLK_l:
+					tcp_send(tcp_sock, CMD_LEAVE, sizeof CMD_LEAVE, 0);
+					break;
+				case SDLK_w:
+					flags |= KEY_UP;
+					break;
+				case SDLK_s:
+					flags |= KEY_DOWN;
+					break;
+				case SDLK_a:
+					flags |= KEY_LEFT;
+					break;
+				case SDLK_d:
+					flags |= KEY_RIGHT;
+					break;
+				default:
+					break;
+			}
+		}
+
+		else if (event.type == SDL_KEYUP) {
+			switch (event.key.keysym.sym) {
+				case SDLK_w:
+					flags ^= KEY_UP;
+					break;
+				case SDLK_s:
+					flags ^= KEY_DOWN;
+					break;
+				case SDLK_a:
+					flags ^= KEY_LEFT;
+					break;
+				case SDLK_d:
+					flags ^= KEY_RIGHT;
+					break;
+				default:
+					break;
+			}
+		}
+
+		else if (event.type == SDL_QUIT) {
+			tcp_send(tcp_sock, CMD_QUIT, sizeof CMD_QUIT, 0);
+			return -1;
+		}
+	}
+
+	return flags;
 }
 
 
