@@ -39,7 +39,7 @@ unsigned int WIDTH  = 800;
 unsigned int HEIGHT = 600;
 
 // state variables
-int id;
+unsigned int id;
 char playing;
 flag_t flags;
 
