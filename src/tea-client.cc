@@ -32,8 +32,8 @@ using TEA::Player;
 
 typedef short flag_t;
 
-unsigned int WIDTH   = 800;
-unsigned int HEIGHT  = 600;
+unsigned int WIDTH  = 800;
+unsigned int HEIGHT = 600;
 
 static int tcp_sock;
 static int udp_sock;
@@ -46,9 +46,9 @@ void init_opengl();
 void draw_scene();
 
 void init_connect(const char *, unsigned short);
-int  handle_handshake(void);
-int  handle_tcp_msg();
-int  handle_udp_msg();
+int handle_handshake(void);
+int handle_tcp_msg();
+int handle_udp_msg();
 flag_t handle_sdl_events();
 
 void add_player(unsigned int);
