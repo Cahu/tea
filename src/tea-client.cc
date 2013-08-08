@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
+#include <sstream>
 #include <vector>
 
 #include <poll.h>
@@ -391,6 +392,18 @@ int handle_tcp_msg(void)
 
 	else if (strstr(msg, CMD_PLIST)) {
 		puts(msg);
+
+		std::string item;
+		std::stringstream ss(msg+sizeof(CMD_PLIST));
+
+		while (std::getline(ss, item, ';')) {
+			double x, y;
+			unsigned int pid;
+
+			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
+				add_player(pid);
+			}
+		}
 	}
 
 	else {
