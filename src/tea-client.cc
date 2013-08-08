@@ -59,7 +59,7 @@ void init_opengl();
 void draw_scene();
 
 // local events
-flag_t handle_sdl_events();
+int handle_sdl_events(flag_t *);
 
 // network function
 void init_connect(const char *, unsigned short);
@@ -130,14 +130,15 @@ int main(int argc, char *argv[])
 		}
 
 		// events on mouse/keyboard
-		flags = handle_sdl_events();
-		if (flags == -1) {
-			goto END;
-		}
+		if (handle_sdl_events(&flags)) {
+			if (flags == -1) {
+				goto END;
+			}
 
-		if (playing) {
-			send_flags(flags);
-			players[id]->set_flags(flags);
+			if (playing) {
+				send_flags(flags);
+				players[id]->set_flags(flags);
+			}
 		}
 
 		// update state
@@ -305,12 +306,13 @@ int handle_handshake(void)
 }
 
 
-flag_t handle_sdl_events(void)
+int handle_sdl_events(flag_t *flags)
 {
 	SDL_Event event;
-	static flag_t flags = 0;
+	int got_event = 0;
 
 	while (SDL_PollEvent(&event)) {
+		got_event = 1;
 
 		if (event.type == SDL_KEYDOWN) {
 			switch (event.key.keysym.sym) {
@@ -321,16 +323,16 @@ flag_t handle_sdl_events(void)
 					tcp_send(tcp_sock, CMD_LEAVE, sizeof CMD_LEAVE, 0);
 					break;
 				case SDLK_w:
-					flags |= KEY_UP;
+					*flags |= KEY_UP;
 					break;
 				case SDLK_s:
-					flags |= KEY_DOWN;
+					*flags |= KEY_DOWN;
 					break;
 				case SDLK_a:
-					flags |= KEY_LEFT;
+					*flags |= KEY_LEFT;
 					break;
 				case SDLK_d:
-					flags |= KEY_RIGHT;
+					*flags |= KEY_RIGHT;
 					break;
 				default:
 					break;
@@ -340,16 +342,16 @@ flag_t handle_sdl_events(void)
 		else if (event.type == SDL_KEYUP) {
 			switch (event.key.keysym.sym) {
 				case SDLK_w:
-					flags ^= KEY_UP;
+					*flags ^= KEY_UP;
 					break;
 				case SDLK_s:
-					flags ^= KEY_DOWN;
+					*flags ^= KEY_DOWN;
 					break;
 				case SDLK_a:
-					flags ^= KEY_LEFT;
+					*flags ^= KEY_LEFT;
 					break;
 				case SDLK_d:
-					flags ^= KEY_RIGHT;
+					*flags ^= KEY_RIGHT;
 					break;
 				default:
 					break;
@@ -362,7 +364,7 @@ flag_t handle_sdl_events(void)
 		}
 	}
 
-	return flags;
+	return got_event;
 }
 
 
