@@ -55,23 +55,23 @@ static std::vector<Player *> players;
 
 
 // graphic functions
-void init_sdl();
-void init_opengl();
-void draw_scene();
+static void init_sdl();
+static void init_opengl();
+static void draw_scene();
 
 // local events
-int handle_sdl_events(flag_t *);
+static int handle_sdl_events(flag_t *);
 
 // network function
-void init_connect(const char *, unsigned short);
-int handle_handshake(void);
-int handle_tcp_msg();
-int handle_udp_msg();
-int send_flags(flag_t);
+static void init_connect(const char *, unsigned short);
+static int handle_handshake(void);
+static int handle_tcp_msg();
+static int handle_udp_msg();
+static int send_flags(flag_t);
 
 // objects management
-void add_player(unsigned int);
-void remove_player(unsigned int);
+static void add_player(unsigned int pidx, double x = 0, double y = 0);
+static void remove_player(unsigned int);
 
 
 
@@ -241,7 +241,7 @@ void init_connect(const char *addr, unsigned short port)
 }
 
 
-void add_player(unsigned int pidx)
+void add_player(unsigned int pidx, double x, double y)
 {
 	if (players.size() < pidx+1) {
 		players.resize(pidx+1, NULL);
@@ -251,7 +251,7 @@ void add_player(unsigned int pidx)
 	assert(players[pidx] == NULL);
 #endif
 
-	players[pidx] = new Player;
+	players[pidx] = new Player(x, y);
 
 	// server just added us as a player
 	if (pidx == id) {
@@ -411,7 +411,7 @@ int handle_tcp_msg(void)
 			unsigned int pid;
 
 			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
-				add_player(pid);
+				add_player(pid, x, y);
 			}
 		}
 	}

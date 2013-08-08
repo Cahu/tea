@@ -4,7 +4,7 @@ add_executable (tea-client
 	tea-client.cc Player.cc utils.cc
 )
 add_executable (tea-server
-	tea-server.cc Server.cc Client.cc Player.cc utils.cc
+	tea-server.cc Client.cc Player.cc utils.cc
 )
 
 target_link_libraries(tea-server)
