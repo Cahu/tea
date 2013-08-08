@@ -141,7 +141,12 @@ int main(int argc, char *argv[])
 		}
 
 		// update state
-		;
+		for (unsigned int i = 0; i < players.size(); i++) {
+			Player *p = players[i];
+			if (p != NULL) {
+				p->tick(0.01);
+			}
+		}
 
 		// draw
 		draw_scene();
