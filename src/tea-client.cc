@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 		for (unsigned int i = 0; i < players.size(); i++) {
 			Player *p = players[i];
 			if (p != NULL) {
-				p->tick(0.01);
+				p->tick(10);
 			}
 		}
 
@@ -203,13 +203,23 @@ void draw_scene(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor3f(1, 1, 1);
+	glLoadIdentity();
 
-	glBegin(GL_QUADS);
-		glVertex3f(100, 100, 0);
-		glVertex3f(300, 100, 0);
-		glVertex3f(300, 300, 0);
-		glVertex3f(100, 300, 0);
-	glEnd();
+	for (unsigned int i = 0; i < players.size(); i++) {
+		Player *p = players[i];
+
+		if (p != NULL) {
+			glLoadIdentity();
+			glTranslatef(p->get_xpos(), p->get_ypos(), 0);
+
+			glBegin(GL_QUADS);
+				glVertex3f( 0,  0, 0);
+				glVertex3f(10,  0, 0);
+				glVertex3f(10, 10, 0);
+				glVertex3f( 0, 10, 0);
+			glEnd();
+		}
+	}
 
 	SDL_GL_SwapBuffers();
 }
