@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
 
 		if (playing) {
 			send_flags(flags);
+			players[id]->set_flags(flags);
 		}
 
 		// update state
@@ -398,8 +399,8 @@ int handle_udp_msg(void)
 	ssize_t size;
 	char msg[MAX_MSG_LEN];
 
-	unsigned int id;
-	unsigned int flags;
+	unsigned int pid;
+	unsigned int pflags;
 
 	size = recv(udp_sock, msg, MAX_MSG_LEN-1, 0);
 	if (size <= 0) {
@@ -407,8 +408,17 @@ int handle_udp_msg(void)
 	}
 	msg[size] = '\0';
 
-	if (2 == sscanf(msg, "%u:%u", &id, &flags)) {
-		puts(msg);
+	if (2 == sscanf(msg, "%u:%u", &pid, &pflags)) {
+		if (pid == id) {
+			; // TODO: use this as an ACK of previously sent flags
+		} else {
+			printf("got flags for player #%u: %u\n", pid, pflags);
+			if (players[pid] == NULL) {
+				fprintf(stderr, "Got flags for player we don't know.\n");
+			} else {
+				players[pid]->set_flags(pflags);
+			}
+		}
 	}
 
 	else {
