@@ -114,6 +114,9 @@ int main(void)
 			}
 		}
 
+		// 10ms sleep
+		usleep(10000);
+
 		// sync clients
 		sync_everyone();
 	}
