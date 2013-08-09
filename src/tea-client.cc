@@ -451,6 +451,26 @@ int handle_udp_msg(void)
 		}
 	}
 
+	else if (strstr(msg, CMD_SYNC) != NULL) {
+		puts(msg);
+
+		std::string item;
+		std::stringstream ss(msg+sizeof(CMD_PLIST));
+
+		while (std::getline(ss, item, ';')) {
+			double x, y;
+			unsigned int pid;
+
+			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
+				if (players[pid] == NULL) {
+					fprintf(stderr, "Got pos for player we don't know.\n");
+				} else {
+					players[pid]->set_pos(x, y);
+				}
+			}
+		}
+	}
+
 	else {
 		fprintf(stderr, "Can't make sence of msg from server: %s\n", msg);
 	}

@@ -40,6 +40,7 @@ static std::vector<struct pollfd> cfds;
 
 // network functions
 static int init_network(unsigned short);
+static void sync_everyone();
 static void handle_new_client();
 static void handle_udp_msg();
 static int handle_client_msg(int);
@@ -104,6 +105,17 @@ int main(void)
 				}
 			}
 		}
+
+		// update state
+		for (unsigned int i = 0; i < players.size(); i++) {
+			Player *p = players[i];
+			if (p != NULL) {
+				p->tick(10);
+			}
+		}
+
+		// sync clients
+		sync_everyone();
 	}
 
 	close(tcp_socket);
@@ -277,6 +289,46 @@ void remove_player(int cid)
 	for (unsigned int i = 0; i < clients.size(); i++) {
 		if (clients[i] != NULL) {
 			clients[i]->send_msg(msg);
+		}
+	}
+}
+
+
+void sync_everyone()
+{
+	int nplayers = 0;
+
+#ifndef NDEBUG
+	assert(clients.size() >= players.size());
+#endif
+
+	std::stringstream ss;
+	ss << CMD_SYNC " ";
+
+	for (unsigned int i = 0; i < players.size(); i++) {
+		Player *p = players[i];
+
+		if (p != NULL) {
+			nplayers++;
+			// format: id:x:y;id:x:y;...
+			ss << i << ":" << p->get_xpos() << ":" << p->get_ypos() << ";";
+		}
+	}
+
+	if (nplayers) {
+		const char *str = ss.str().c_str();
+		size_t len = strlen(str);
+
+		for (unsigned int i = 0; i < clients.size(); i++) {
+			Client *c = clients[i];
+
+			if (c != NULL) {
+				// send via UDP
+				const sockaddr_in &addr = c->get_addr();
+				sendto(
+					udp_socket, str, len, 0, (sockaddr*) &addr, sizeof addr
+				);
+			}
 		}
 	}
 }

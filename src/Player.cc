@@ -50,6 +50,11 @@ namespace TEA {
 		_flags = flags;
 	}
 
+	void Player::set_pos(double x, double y)
+	{
+		_xpos = x;
+		_ypos = y;
+	}
 
 	double Player::get_xpos() const
 	{

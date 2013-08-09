@@ -23,5 +23,6 @@ namespace TEA {
 		void set_flags(int);
 		double get_xpos() const;
 		double get_ypos() const;
+		void set_pos(double, double);
 	};
 }

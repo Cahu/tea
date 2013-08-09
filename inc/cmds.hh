@@ -3,4 +3,5 @@
 #define CMD_QUIT  "QUIT"
 #define CMD_PLIST "PLIST"
 
+#define CMD_SYNC  "SYNC"
 #define CMD_FLAGS "FLAGS"
