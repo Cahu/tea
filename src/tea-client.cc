@@ -16,9 +16,9 @@
 #include <SDL/SDL.h>
 
 #include "Player.hh"
-#include "utils.hh"
 #include "cmds.hh"
 #include "keys.hh"
+#include "utils/netutils.hh"
 
 #define PORT 9999
 #define MAX_MSG_LEN 64

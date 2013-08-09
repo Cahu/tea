@@ -8,4 +8,3 @@ find_package (OpenGL)
 set (CMAKE_CXX_FLAGS "-g -Wall")
 
 add_subdirectory (src)
-add_subdirectory (lib)

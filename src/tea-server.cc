@@ -11,8 +11,8 @@
 
 #include "Player.hh"
 #include "Client.hh"
-#include "utils.hh"
 #include "cmds.hh"
+#include "utils/netutils.hh"
 
 #ifndef NDEBUG
 	#include <assert.h>
