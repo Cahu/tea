@@ -43,7 +43,7 @@ static int init_network(unsigned short);
 static void sync_everyone();
 static void handle_new_client();
 static void handle_udp_msg();
-static int handle_client_msg(int);
+static int handle_client_msg(unsigned int);
 static int send_cookie(int);
 static int send_player_list(unsigned int);
 static int process_client_msg(unsigned int, const char *);
@@ -253,6 +253,10 @@ void remove_client(int cid)
 	}
 
 	free_slots.push_back(cid);
+
+#ifndef NDEBUG
+	assert(players.size() == clients.size());
+#endif
 }
 
 
@@ -274,6 +278,10 @@ void add_player(int cid)
 			clients[i]->send_msg(msg);
 		}
 	}
+
+#ifndef NDEBUG
+	assert(players.size() == clients.size());
+#endif
 }
 
 
@@ -294,6 +302,10 @@ void remove_player(int cid)
 			clients[i]->send_msg(msg);
 		}
 	}
+
+#ifndef NDEBUG
+	assert(players.size() == clients.size());
+#endif
 }
 
 
@@ -374,9 +386,10 @@ void handle_udp_msg()
 }
 
 
-int handle_client_msg(int cid)
+int handle_client_msg(unsigned int cid)
 {
 #ifndef NDEBUG
+	assert(clients.size() > cid);
 	assert(clients[cid] != NULL);
 #endif
 
@@ -414,8 +427,9 @@ int send_cookie(int sock)
 int send_player_list(unsigned int cid)
 {
 #ifndef NDEBUG
-	assert(clients.size() >= cid);
 	assert(players.size() >= cid);
+	assert(clients.size() >= cid);
+	assert(clients.size() == players.size());
 #endif 
 
 	int nplayers = 0;
@@ -446,6 +460,7 @@ int process_client_msg(unsigned int cid, const char *msg)
 #ifndef NDEBUG
 	assert(clients.size() >= cid);
 	assert(players.size() >= cid);
+	assert(clients.size() == players.size());
 #endif
 	puts(msg);
 
@@ -484,6 +499,10 @@ int process_client_msg(unsigned int cid, const char *msg)
 
 int process_client_dgram(const sockaddr_in &from, const char *dgram)
 {
+#ifndef NDEBUG
+	assert(clients.size() == players.size());
+#endif
+
 	unsigned int id;
 	unsigned int flags;
 	unsigned int cookienum;
@@ -512,7 +531,7 @@ int process_client_dgram(const sockaddr_in &from, const char *dgram)
 
 	else if (2 == sscanf(dgram, CMD_FLAGS "%u:%u", &id, &flags)) {
 
-		if (id > clients.size() || clients[id] == NULL) {
+		if (id >= clients.size() || clients[id] == NULL) {
 			fprintf(stderr, "Got message with invalid id #%u\n", id);
 			return -1;
 		}

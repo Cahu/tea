@@ -241,37 +241,37 @@ void init_connect(const char *addr, unsigned short port)
 }
 
 
-void add_player(unsigned int pidx, double x, double y)
+void add_player(unsigned int pid, double x, double y)
 {
-	if (players.size() < pidx+1) {
-		players.resize(pidx+1, NULL);
+	if (pid >= players.size()) {
+		players.resize(pid+1, NULL);
 	}
 
 #ifndef NDEBUG
-	assert(players[pidx] == NULL);
+	assert(players[pid] == NULL);
 #endif
 
-	players[pidx] = new Player(x, y);
+	players[pid] = new Player(x, y);
 
 	// server just added us as a player
-	if (pidx == id) {
+	if (pid == id) {
 		playing = 1;
 	}
 }
 
 
-void remove_player(unsigned int pidx)
+void remove_player(unsigned int pid)
 {
-	if (players.size() < pidx+1 || players[pidx] == NULL) {
+	if (pid >= players.size() || players[pid] == NULL) {
 		fprintf(stderr, "Trying to remove a player we don't know about!\n");
 		return;
 	}
 
-	delete players[pidx];
-	players[pidx] = NULL;
+	delete players[pid];
+	players[pid] = NULL;
 
 	// server just removed us from the game
-	if (pidx == id) {
+	if (pid == id) {
 		playing = 0;
 	}
 }
@@ -443,7 +443,7 @@ int handle_udp_msg(void)
 			; // TODO: use this as an ACK of previously sent flags
 		} else {
 			printf("got flags for player #%u: %u\n", pid, pflags);
-			if (players[pid] == NULL) {
+			if (pid >= players.size() || players[pid] == NULL) {
 				fprintf(stderr, "Got flags for player we don't know.\n");
 			} else {
 				players[pid]->set_flags(pflags);
@@ -462,7 +462,7 @@ int handle_udp_msg(void)
 			unsigned int pid;
 
 			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
-				if (players[pid] == NULL) {
+				if (pid >= players.size() || players[pid] == NULL) {
 					fprintf(stderr, "Got pos for player we don't know.\n");
 				} else {
 					players[pid]->set_pos(x, y);
