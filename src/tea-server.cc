@@ -462,9 +462,8 @@ int process_client_msg(unsigned int cid, const char *msg)
 	assert(players.size() >= cid);
 	assert(clients.size() == players.size());
 #endif
-	puts(msg);
 
-	if (NULL != strstr(msg, CMD_JOIN)) {
+	if (strstr(msg, CMD_JOIN) == msg) {
 		fprintf(stderr, CMD_JOIN "\n");
 
 		if (players[cid] != NULL) {
@@ -474,7 +473,7 @@ int process_client_msg(unsigned int cid, const char *msg)
 		}
 	}
 
-	else if (NULL != strstr(msg, CMD_LEAVE)) {
+	else if (strstr(msg, CMD_LEAVE) == msg) {
 		fprintf(stderr, CMD_LEAVE "\n");
 
 		if (players[cid] == NULL) {
@@ -484,7 +483,7 @@ int process_client_msg(unsigned int cid, const char *msg)
 		}
 	}
 
-	else if (NULL != strstr(msg, CMD_QUIT)) {
+	else if (strstr(msg, CMD_QUIT) == msg) {
 		fprintf(stderr, CMD_QUIT "\n");
 		remove_client(cid);
 	}
@@ -502,6 +501,7 @@ int process_client_dgram(const sockaddr_in &from, const char *dgram)
 #ifndef NDEBUG
 	assert(clients.size() == players.size());
 #endif
+	puts(dgram);
 
 	unsigned int id;
 	unsigned int flags;

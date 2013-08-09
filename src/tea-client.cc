@@ -400,7 +400,7 @@ int handle_tcp_msg(void)
 		remove_player(id);
 	}
 
-	else if (strstr(msg, CMD_PLIST)) {
+	else if (strstr(msg, CMD_PLIST) == msg) {
 		puts(msg);
 		std::vector<std::string> items;
 		splitstr(msg+sizeof(CMD_PLIST), items, ';');
@@ -484,7 +484,7 @@ int send_flags(flag_t flags)
 	int size;
 	char flagmsg[32];
 
-	size = sprintf(flagmsg, CMD_FLAGS "%u:%hu", id, flags);
+	size = sprintf(flagmsg, CMD_FLAGS " %u:%hu", id, flags);
 
 	if (1 > send(udp_sock, flagmsg, size, 0)) {
 		return -1;
