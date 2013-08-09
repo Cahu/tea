@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
-#include <sstream>
 #include <vector>
 
 #include <poll.h>
@@ -19,6 +18,7 @@
 #include "cmds.hh"
 #include "keys.hh"
 #include "utils/netutils.hh"
+#include "utils/splitstr.hh"
 
 #define PORT 9999
 #define MAX_MSG_LEN 64
@@ -402,15 +402,15 @@ int handle_tcp_msg(void)
 
 	else if (strstr(msg, CMD_PLIST)) {
 		puts(msg);
+		std::vector<std::string> items;
+		splitstr(msg+sizeof(CMD_PLIST), items, ';');
 
-		std::string item;
-		std::stringstream ss(msg+sizeof(CMD_PLIST));
-
-		while (std::getline(ss, item, ';')) {
+		std::vector<std::string>::iterator it;
+		for (it = items.begin(); it != items.end(); it++) {
 			double x, y;
 			unsigned int pid;
 
-			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
+			if (3 == sscanf(it->c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
 				add_player(pid, x, y);
 			}
 		}
@@ -451,17 +451,17 @@ int handle_udp_msg(void)
 		}
 	}
 
-	else if (strstr(msg, CMD_SYNC) != NULL) {
+	else if (strstr(msg, CMD_SYNC) == msg) {
 		puts(msg);
+		std::vector<std::string> items;
+		splitstr(msg+sizeof(CMD_SYNC), items, ';');
 
-		std::string item;
-		std::stringstream ss(msg+sizeof(CMD_PLIST));
-
-		while (std::getline(ss, item, ';')) {
+		std::vector<std::string>::iterator it;
+		for (it = items.begin(); it != items.end(); it++) {
 			double x, y;
 			unsigned int pid;
 
-			if (3 == sscanf(item.c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
+			if (3 == sscanf(it->c_str(), "%u:%lf:%lf", &pid, &x, &y)) {
 				if (pid >= players.size() || players[pid] == NULL) {
 					fprintf(stderr, "Got pos for player we don't know.\n");
 				} else {

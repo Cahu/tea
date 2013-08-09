@@ -10,5 +10,14 @@ add_executable (tea-server
 	tea-server.cc Client.cc Player.cc
 )
 
-target_link_libraries(tea-server netutils)
-target_link_libraries(tea-client ${OPENGL_LIBRARY} ${SDL_LIBRARY} netutils)
+target_link_libraries(tea-server
+	splitstr
+	netutils
+)
+
+target_link_libraries(tea-client
+	${OPENGL_LIBRARY}
+	${SDL_LIBRARY}
+	splitstr
+	netutils
+)
