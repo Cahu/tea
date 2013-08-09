@@ -455,7 +455,7 @@ int process_client_dgram(const sockaddr_in &from, const char *dgram)
 		}
 	}
 
-	else if (2 == sscanf(dgram, "%u:%u", &id, &flags)) {
+	else if (2 == sscanf(dgram, CMD_FLAGS "%u:%u", &id, &flags)) {
 
 		if (id > clients.size() || clients[id] == NULL) {
 			fprintf(stderr, "Got message with invalid id #%u\n", id);
@@ -476,7 +476,7 @@ int process_client_dgram(const sockaddr_in &from, const char *dgram)
 
 		players[id]->set_flags(flags);
 
-		size = sprintf(msg, "%u:%u", id, flags);
+		size = sprintf(msg, CMD_FLAGS "%u:%u", id, flags);
 
 		// broadcast flag
 		for (unsigned int i = 0; i < clients.size(); i++) {

@@ -438,7 +438,7 @@ int handle_udp_msg(void)
 	}
 	msg[size] = '\0';
 
-	if (2 == sscanf(msg, "%u:%u", &pid, &pflags)) {
+	if (2 == sscanf(msg, CMD_FLAGS "%u:%u", &pid, &pflags)) {
 		if (pid == id) {
 			; // TODO: use this as an ACK of previously sent flags
 		} else {
@@ -462,9 +462,9 @@ int handle_udp_msg(void)
 int send_flags(flag_t flags)
 {
 	int size;
-	char flagmsg[24];
+	char flagmsg[32];
 
-	size = sprintf(flagmsg, "%d:%hu", id, flags);
+	size = sprintf(flagmsg, CMD_FLAGS "%u:%hu", id, flags);
 
 	if (1 > send(udp_sock, flagmsg, size, 0)) {
 		return -1;
