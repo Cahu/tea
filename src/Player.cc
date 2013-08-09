@@ -17,6 +17,7 @@ namespace TEA {
 	{
 		_xpos = x;
 		_ypos = y;
+		_flags = 0;
 #ifndef NDEBUG
 		fprintf(stderr, "+ Player crated\n");
 #endif
