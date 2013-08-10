@@ -52,6 +52,7 @@ static int tcp_sock;
 static int udp_sock;
 
 // objects collections
+MapVBO map;
 static std::vector<Player *> players;
 
 
@@ -90,8 +91,8 @@ int main(int argc, char *argv[])
 	flags = 0;
 	playing = 0;
 
-	MapVBO m("map.txt");
-	m.print();
+	map.load("map.txt");
+	map.print();
 
 	if (argc < 2) {
 		init_connect("127.0.0.1", PORT);
@@ -219,6 +220,8 @@ void draw_scene(void)
 
 	glColor3f(1, 1, 1);
 	glLoadIdentity();
+
+	map.render();
 
 	for (unsigned int i = 0; i < players.size(); i++) {
 		Player *p = players[i];

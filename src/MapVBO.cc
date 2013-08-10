@@ -56,23 +56,23 @@ namespace TEA {
 
 				switch (_map[i][j]) {
 					case GLYPH_WALL:
-						verts.push_back(i*_usize);
 						verts.push_back(j*_usize);
-						verts.push_back(0.f);
-						verts.push_back(1.f);
-						//--
-						verts.push_back((i+1)*_usize);
-						verts.push_back(j*_usize);
-						verts.push_back(0.f);
-						verts.push_back(1.f);
-						//--
-						verts.push_back((i+1)*_usize);
-						verts.push_back((j+1)*_usize);
-						verts.push_back(0.f);
-						verts.push_back(1.f);
-						//--
 						verts.push_back(i*_usize);
+						verts.push_back(0.f);
+						verts.push_back(1.f);
+						//--
 						verts.push_back((j+1)*_usize);
+						verts.push_back(i*_usize);
+						verts.push_back(0.f);
+						verts.push_back(1.f);
+						//--
+						verts.push_back((j+1)*_usize);
+						verts.push_back((i+1)*_usize);
+						verts.push_back(0.f);
+						verts.push_back(1.f);
+						//--
+						verts.push_back(j*_usize);
+						verts.push_back((i+1)*_usize);
 						verts.push_back(0.f);
 						verts.push_back(1.f);
 						break;
@@ -97,6 +97,15 @@ namespace TEA {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+
+	void MapVBO::render()
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, _buff);
+		glVertexPointer(4, GL_FLOAT, 0, NULL);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawArrays(GL_QUADS, 0, _size);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 
 	void MapVBO::destroyVBO()
 	{
