@@ -7,6 +7,7 @@
 namespace TEA {
 
 	class Map {
+		protected:
 		unsigned int _width;
 		unsigned int _height;
 		unsigned int _nobstacles;

@@ -11,10 +11,10 @@
 	#include <assert.h>
 #endif
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 #include <SDL/SDL.h>
 
-#include "Map.hh"
+#include "MapVBO.hh"
 #include "Player.hh"
 #include "cmds.hh"
 #include "keys.hh"
@@ -31,7 +31,7 @@
 	}
 
 
-using TEA::Map;
+using TEA::MapVBO;
 using TEA::Player;
 
 typedef short flag_t;
@@ -81,17 +81,17 @@ static void remove_player(unsigned int);
 
 int main(int argc, char *argv[])
 {
-	int exitval = EXIT_SUCCESS;
+	init_sdl();
+	init_opengl();
 
-	Map m("map.txt");
-	m.print();
+	int exitval = EXIT_SUCCESS;
 
 	// init state variables
 	flags = 0;
 	playing = 0;
 
-	init_sdl();
-	init_opengl();
+	MapVBO m("map.txt");
+	m.print();
 
 	if (argc < 2) {
 		init_connect("127.0.0.1", PORT);
@@ -190,6 +190,15 @@ void init_sdl(void)
 
 void init_opengl(void)
 {
+	GLenum err = glewInit();
+	if (GLEW_OK != err) {
+		fprintf(stderr,
+			"GLEW failed to initialize: %s\n",
+			glewGetErrorString(err)
+		);
+		exit(EXIT_FAILURE);
+	}
+
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
 	glDepthFunc(GL_LESS);
