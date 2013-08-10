@@ -14,10 +14,11 @@
 #include <GL/glew.h>
 #include <SDL/SDL.h>
 
-#include "MapVBO.hh"
-#include "Player.hh"
 #include "cmds.hh"
 #include "keys.hh"
+#include "MapVBO.hh"
+#include "Player.hh"
+#include "shaders.hh"
 #include "utils/netutils.hh"
 #include "utils/splitstr.hh"
 
@@ -191,6 +192,7 @@ void init_sdl(void)
 
 void init_opengl(void)
 {
+	// gl extensions
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
 		fprintf(stderr,
@@ -200,6 +202,7 @@ void init_opengl(void)
 		exit(EXIT_FAILURE);
 	}
 
+	// default stuff
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
 	glDepthFunc(GL_LESS);
@@ -210,6 +213,12 @@ void init_opengl(void)
 	glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
 
 	glMatrixMode(GL_MODELVIEW);
+
+	// shaders stuff
+	std::vector<GLuint> shaders;
+	shaders.push_back(load_shader(GL_VERTEX_SHADER, "shaders/default.vert"));
+	shaders.push_back(load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag"));
+	make_program(shaders);
 }
 
 

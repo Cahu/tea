@@ -84,8 +84,6 @@ namespace TEA {
 
 		_size = verts.size();
 
-		printf("%p\n", glGenBuffers);
-
 		glGenBuffers(1, &_buff);
 		glBindBuffer(GL_ARRAY_BUFFER, _buff);
 		glBufferData(
