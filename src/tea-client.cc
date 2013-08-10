@@ -14,6 +14,7 @@
 #include <GL/gl.h>
 #include <SDL/SDL.h>
 
+#include "Map.hh"
 #include "Player.hh"
 #include "cmds.hh"
 #include "keys.hh"
@@ -29,6 +30,8 @@
 		exit(EXIT_FAILURE); \
 	}
 
+
+using TEA::Map;
 using TEA::Player;
 
 typedef short flag_t;
@@ -79,6 +82,9 @@ static void remove_player(unsigned int);
 int main(int argc, char *argv[])
 {
 	int exitval = EXIT_SUCCESS;
+
+	Map m("map.txt");
+	m.print();
 
 	// init state variables
 	flags = 0;
