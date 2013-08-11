@@ -1,3 +1,6 @@
+#ifndef _CLASS_MAP_
+#define _CLASS_MAP_
+
 #include <vector>
 
 #define GLYPH_EMPTY ' '
@@ -24,3 +27,5 @@ namespace TEA {
 		const std::vector< std::vector<char> > &data() const;
 	};
 }
+
+#endif
