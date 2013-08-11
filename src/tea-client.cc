@@ -219,9 +219,17 @@ void init_opengl(void)
 
 	// shaders stuff
 	std::vector<GLuint> shaders;
-	shaders.push_back(load_shader(GL_VERTEX_SHADER, "shaders/default.vert"));
-	shaders.push_back(load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag"));
-	make_program(shaders);
+
+	GLuint vshader = load_shader(GL_VERTEX_SHADER, "shaders/default.vert");
+	if (vshader == 0) { exit(EXIT_FAILURE); }
+
+	GLuint fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag");
+	if (fshader == 0) { exit(EXIT_FAILURE); }
+
+	shaders.push_back(vshader);
+	shaders.push_back(fshader);
+	GLuint program = make_program(shaders);
+	if (program == 0) { exit(EXIT_FAILURE); }
 }
 
 
