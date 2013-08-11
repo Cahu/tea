@@ -16,9 +16,10 @@
 
 #include "cmds.hh"
 #include "keys.hh"
-#include "MapVBO.hh"
+#include "Map.hh"
 #include "Player.hh"
 #include "shaders.hh"
+#include "utils/mapvbo.hh"
 #include "utils/netutils.hh"
 #include "utils/splitstr.hh"
 
@@ -32,7 +33,7 @@
 	}
 
 
-using TEA::MapVBO;
+using TEA::Map;
 using TEA::Player;
 
 typedef short flag_t;
@@ -53,7 +54,8 @@ static int tcp_sock;
 static int udp_sock;
 
 // objects collections
-MapVBO map;
+Map map;
+structVBO mapvbo;
 static std::vector<Player *> players;
 
 
@@ -93,7 +95,8 @@ int main(int argc, char *argv[])
 	playing = 0;
 
 	map.load("map.txt");
-	map.print();
+	map_to_VBO(map, mapvbo);
+
 
 	if (argc < 2) {
 		init_connect("127.0.0.1", PORT);
@@ -230,7 +233,12 @@ void draw_scene(void)
 	glColor3f(1, 1, 1);
 	glLoadIdentity();
 
-	map.render();
+	// draw map
+	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.buff);
+	glVertexPointer(4, GL_FLOAT, 0, NULL);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	for (unsigned int i = 0; i < players.size(); i++) {
 		Player *p = players[i];
