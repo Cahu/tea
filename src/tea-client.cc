@@ -41,21 +41,21 @@ typedef short flag_t;
 
 
 // config variables
-unsigned int WIDTH  = 800;
-unsigned int HEIGHT = 600;
+static unsigned int WIDTH  = 800;
+static unsigned int HEIGHT = 600;
 
 // state variables
-unsigned int id;
-char playing;
-flag_t flags;
+static unsigned int id;
+static char playing;
+static flag_t flags;
 
 // network stuff
 static int tcp_sock;
 static int udp_sock;
 
 // objects collections
-Map map;
-structVBO mapvbo;
+static Map map;
+static structVBO mapvbo;
 static std::vector<Player *> players;
 
 
