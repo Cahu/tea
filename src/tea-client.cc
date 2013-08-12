@@ -207,14 +207,9 @@ void init_opengl(void)
 	}
 
 	// default stuff
+	glViewport(0, 0, WIDTH, HEIGHT);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
-
-	// proj
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
-	glMatrixMode(GL_MODELVIEW);
 
 	// shaders stuff
 	std::vector<GLuint> shaders;
