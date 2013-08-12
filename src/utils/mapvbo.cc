@@ -3,7 +3,7 @@
 #include "mapvbo.hh"
 
 
-void map_to_VBO(const TEA::Map &map, structVBO &sVBO, float usize)
+void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 {
 	std::vector<float> verts;
 	const std::vector<std::vector<char> > &mapdata = map.data();
@@ -14,17 +14,17 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, float usize)
 
 			switch (mapdata[i][j]) {
 				case GLYPH_WALL:
-					verts.push_back(j*usize);
-					verts.push_back(i*usize);
+					verts.push_back(+1.0*j*usize);
+					verts.push_back(-1.0*i*usize);
 					//--
-					verts.push_back((j+1)*usize);
-					verts.push_back(i*usize);
+					verts.push_back(+1.0*(j+1)*usize);
+					verts.push_back(-1.0*i*usize);
 					//--
-					verts.push_back((j+1)*usize);
-					verts.push_back((i+1)*usize);
+					verts.push_back(+1.0*(j+1)*usize);
+					verts.push_back(-1.0*(i+1)*usize);
 					//--
-					verts.push_back(j*usize);
-					verts.push_back((i+1)*usize);
+					verts.push_back(+1.0*j*usize);
+					verts.push_back(-1.0*(i+1)*usize);
 					break;
 				default:
 					break;
