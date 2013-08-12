@@ -56,6 +56,7 @@ static int udp_sock;
 // objects collections
 static Map map;
 static structVBO mapvbo;
+static GLuint default_shader;
 static std::vector<Player *> players;
 
 
@@ -186,7 +187,7 @@ void init_sdl(void)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	if (SDL_SetVideoMode(WIDTH, HEIGHT, 0, SDL_OPENGL) < 0) {
+	if (!SDL_SetVideoMode(WIDTH, HEIGHT, 0, SDL_OPENGL)) {
 		fprintf(stderr, "Can't set video mode.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -208,13 +209,11 @@ void init_opengl(void)
 	// default stuff
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_DEPTH_TEST);
 
+	// proj
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
-
 	glMatrixMode(GL_MODELVIEW);
 
 	// shaders stuff
@@ -228,8 +227,10 @@ void init_opengl(void)
 
 	shaders.push_back(vshader);
 	shaders.push_back(fshader);
-	GLuint program = make_program(shaders);
-	if (program == 0) { exit(EXIT_FAILURE); }
+	default_shader = make_program(shaders);
+	if (default_shader == 0) { exit(EXIT_FAILURE); }
+	glDeleteShader(vshader);
+	glDeleteShader(fshader);
 }
 
 
@@ -237,32 +238,36 @@ void draw_scene(void)
 {
 	glMatrixMode(GL_MODELVIEW);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glColor3f(1, 1, 1);
 	glLoadIdentity();
 
-	// draw map
+	glUseProgram(default_shader);
+
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.buff);
-	glVertexPointer(4, GL_FLOAT, 0, NULL);
-	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(0);
 
-	for (unsigned int i = 0; i < players.size(); i++) {
-		Player *p = players[i];
+	//glColor3f(1, 1, 1);
+	//for (unsigned int i = 0; i < players.size(); i++) {
+	//	Player *p = players[i];
 
-		if (p != NULL) {
-			glLoadIdentity();
-			glTranslatef(p->get_xpos(), p->get_ypos(), 0);
+	//	if (p != NULL) {
+	//		glLoadIdentity();
+	//		glTranslatef(p->get_xpos(), p->get_ypos(), 0);
 
-			glBegin(GL_QUADS);
-				glVertex3f( 0,  0, 0);
-				glVertex3f(10,  0, 0);
-				glVertex3f(10, 10, 0);
-				glVertex3f( 0, 10, 0);
-			glEnd();
-		}
-	}
+	//		glBegin(GL_QUADS);
+	//			glVertex2f( 0.0,  0.0);
+	//			glVertex2f(10.0,  0.0);
+	//			glVertex2f(10.0, 10.0);
+	//			glVertex2f( 0.0, 10.0);
+	//		glEnd();
+	//	}
+	//}
+
+	glUseProgram(0);
 
 	SDL_GL_SwapBuffers();
 }

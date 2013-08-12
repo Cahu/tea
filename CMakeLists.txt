@@ -6,6 +6,6 @@ find_package (SDL)
 find_package (GLEW)
 find_package (OpenGL)
 
-set (CMAKE_CXX_FLAGS "-g -Wall")
+set (CMAKE_CXX_FLAGS "-g -Wall -Wextra")
 
 add_subdirectory (src)

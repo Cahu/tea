@@ -3,7 +3,7 @@
 #include "mapvbo.hh"
 
 
-void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
+void map_to_VBO(const TEA::Map &map, structVBO &sVBO, float usize)
 {
 	std::vector<float> verts;
 	const std::vector<std::vector<char> > &mapdata = map.data();
@@ -16,29 +16,23 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 				case GLYPH_WALL:
 					verts.push_back(j*usize);
 					verts.push_back(i*usize);
-					verts.push_back(0.f);
-					verts.push_back(1.f);
 					//--
 					verts.push_back((j+1)*usize);
 					verts.push_back(i*usize);
-					verts.push_back(0.f);
-					verts.push_back(1.f);
 					//--
 					verts.push_back((j+1)*usize);
 					verts.push_back((i+1)*usize);
-					verts.push_back(0.f);
-					verts.push_back(1.f);
 					//--
 					verts.push_back(j*usize);
 					verts.push_back((i+1)*usize);
-					verts.push_back(0.f);
-					verts.push_back(1.f);
 					break;
 				default:
 					break;
 			}
 		}
 	}
+
+	sVBO.size = verts.size();
 
 	glGenBuffers(1, &sVBO.buff);
 	glBindBuffer(GL_ARRAY_BUFFER, sVBO.buff);
@@ -49,6 +43,4 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 		GL_STATIC_DRAW
 	);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	sVBO.size = verts.size();
 }

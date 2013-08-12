@@ -30,7 +30,7 @@ GLuint load_shader(GLenum type, const char *file)
 	// check compilation
 	GLint status;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE) {
+	if (status != GL_TRUE) {
 		GLint infolength;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
 
@@ -58,7 +58,7 @@ GLuint make_program(const std::vector<GLuint> &shaders)
 
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
+	if (status != GL_TRUE) {
 		GLint infolength;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolength);
 
