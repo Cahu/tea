@@ -208,7 +208,8 @@ void add_client(int csock, const struct sockaddr_in &caddr)
 	else {
 		pollfd pfd = {
 			.fd = csock,
-			.events = POLLIN
+			.events = POLLIN,
+			.revents = 0
 		};
 		cid = clients.size(); // new id is the same as the size of the vector
 		cfds.push_back(pfd);
@@ -331,8 +332,9 @@ void sync_everyone()
 	}
 
 	if (nplayers) {
-		const char *str = ss.str().c_str();
-		size_t len = strlen(str);
+		std::string s = ss.str();
+		const char *str = s.c_str();
+		size_t len = s.size();
 
 		for (unsigned int i = 0; i < clients.size(); i++) {
 			Client *c = clients[i];
