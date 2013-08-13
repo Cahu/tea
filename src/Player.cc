@@ -30,8 +30,8 @@ namespace TEA {
 		double xinc = 0;
 		double yinc = 0;
 
-		if (_flags & FLAG_UP)    { yinc = -1 * PSPEED * time_ms; }
-		if (_flags & FLAG_DOWN)  { yinc = +1 * PSPEED * time_ms; }
+		if (_flags & FLAG_UP)    { yinc = +1 * PSPEED * time_ms; }
+		if (_flags & FLAG_DOWN)  { yinc = -1 * PSPEED * time_ms; }
 		if (_flags & FLAG_LEFT)  { xinc = -1 * PSPEED * time_ms; }
 		if (_flags & FLAG_RIGHT) { xinc = +1 * PSPEED * time_ms; }
 

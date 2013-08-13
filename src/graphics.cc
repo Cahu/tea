@@ -9,12 +9,16 @@
 #include "utils/mapvbo.hh"
 
 using TEA::Map;
+using namespace glm;
 
 // projection and aspect ratio
-glm::mat4 model;
-glm::mat4 view;
-glm::mat4 proj;
-glm::mat4 MVP;
+mat4 model;
+mat4 view;
+mat4 proj;
+mat4 MVP;
+
+vec3 base_eye(0.0, -20.0, 10.0);
+
 
 // config variables
 static unsigned int WIDTH  = 800;
@@ -80,24 +84,21 @@ void init_opengl(void)
 	GLint MVP_loc = glGetUniformLocation(default_shader, "MVP");
 	if (-1 == MVP_loc) {
 		fprintf(stderr, "Can't set MVP matrix\n");
-		//exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	} else {
-		view = glm::lookAt(
-			glm::vec3( 0.0f, -5.0f,  5.0f), // eye
-			glm::vec3( 0.0f,  0.0f,  0.0f), // center
-			glm::vec3( 0.0f,  1.0f,  0.0f)  // up
+		view = lookAt(
+			base_eye, // eye
+			vec3( 0.0f,   0.0f,   0.0f), // center
+			vec3( 0.0f,   1.0f,   0.0f)  // up
 		);
 
-		proj = glm::perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
+		proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
 
-		model  = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, 0.f));
-		//model *= glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+		model  = translate(mat4(1.0f), vec3(0.f, 0.f, 0.f));
 
 		MVP = proj * view * model;
 	}
 
-	glUseProgram(default_shader);
-	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm::value_ptr(MVP));
 }
 
 
@@ -108,12 +109,24 @@ void init_world(const char *file)
 }
 
 
-void draw_scene(void)
+void draw_scene(float relx, float rely)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
+	view = lookAt(
+		vec3( base_eye + vec3(relx, rely, 0.0)), // eye
+		vec3(            vec3(relx, rely, 0.0)), // center
+		vec3(            vec3(0.0,   1.0, 0.0))  // up
+	);
+	MVP = proj * view * model;
+
 	// draw map
+	glUseProgram(default_shader);
+
+	GLint MVP_loc = glGetUniformLocation(default_shader, "MVP");
+	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
+
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.buff);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
