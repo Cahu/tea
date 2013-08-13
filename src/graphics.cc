@@ -82,9 +82,8 @@ void init_opengl(void)
 		fprintf(stderr, "Can't set MVP matrix\n");
 		//exit(EXIT_FAILURE);
 	} else {
-		//view = glm::mat4(1.0f);
 		view = glm::lookAt(
-			glm::vec3( 0.0f,  0.0f, 10.0f), // eye
+			glm::vec3( 0.0f, -5.0f,  5.0f), // eye
 			glm::vec3( 0.0f,  0.0f,  0.0f), // center
 			glm::vec3( 0.0f,  1.0f,  0.0f)  // up
 		);
@@ -92,7 +91,7 @@ void init_opengl(void)
 		proj = glm::perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
 
 		model  = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, 0.f));
-		model *= glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+		//model *= glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 
 		MVP = proj * view * model;
 	}

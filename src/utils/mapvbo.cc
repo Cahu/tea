@@ -3,6 +3,41 @@
 #include "mapvbo.hh"
 
 
+// 72 verts :s
+float cube[] = {
+	 // front
+	-0.5,  0.5,  0.5,
+	 0.5,  0.5,  0.5,
+	 0.5, -0.5,  0.5,
+	-0.5, -0.5,  0.5,
+	 // back
+	-0.5,  0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	 // left
+	-0.5,  0.5,  0.5,
+	-0.5,  0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+	 // right
+	 0.5,  0.5,  0.5,
+	 0.5,  0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5,
+	 // top
+	-0.5,  0.5,  0.5,
+	-0.5,  0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	 0.5,  0.5,  0.5,
+	 // bottom
+	-0.5, -0.5,  0.5,
+	-0.5, -0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5
+};
+
+
 void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 {
 	std::vector<float> verts;
@@ -14,36 +49,17 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 
 			switch (mapdata[i][j]) {
 				case GLYPH_WALL:
-					verts.push_back(+1.0*j*usize);
-					verts.push_back(-1.0*i*usize);
-					verts.push_back(0.0);
-					//--
-					verts.push_back(+1.0*(j+1)*usize);
-					verts.push_back(-1.0*i*usize);
-					verts.push_back(0.0);
-					//--
-					verts.push_back(+1.0*(j+1)*usize);
-					verts.push_back(-1.0*(i+1)*usize);
-					verts.push_back(0.0);
-					//--
-					verts.push_back(+1.0*j*usize);
-					verts.push_back(-1.0*(i+1)*usize);
-					verts.push_back(0.0);
+					for (unsigned int k = 0; k < 72; k += 3) {
+						verts.push_back((cube[k+0]+j)*usize);
+						verts.push_back((cube[k+1]+i)*usize);
+						verts.push_back((cube[k+2]+0)*usize);
+					}
 					break;
 				default:
 					break;
 			}
 		}
 	}
-
-	/*
-	float vertices[] = {
-		-0.5, -0.5, 0.0,
-		-0.5,  0.5, 0.0,
-		 0.5,  0.5, 0.0,
-		 0.5, -0.5, 0.0
-	};
-	*/
 
 	sVBO.size = verts.size();
 
