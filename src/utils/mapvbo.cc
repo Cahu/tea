@@ -16,15 +16,19 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 				case GLYPH_WALL:
 					verts.push_back(+1.0*j*usize);
 					verts.push_back(-1.0*i*usize);
+					verts.push_back(0.0);
 					//--
 					verts.push_back(+1.0*(j+1)*usize);
 					verts.push_back(-1.0*i*usize);
+					verts.push_back(0.0);
 					//--
 					verts.push_back(+1.0*(j+1)*usize);
 					verts.push_back(-1.0*(i+1)*usize);
+					verts.push_back(0.0);
 					//--
 					verts.push_back(+1.0*j*usize);
 					verts.push_back(-1.0*(i+1)*usize);
+					verts.push_back(0.0);
 					break;
 				default:
 					break;
@@ -32,13 +36,22 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 		}
 	}
 
+	/*
+	float vertices[] = {
+		-0.5, -0.5, 0.0,
+		-0.5,  0.5, 0.0,
+		 0.5,  0.5, 0.0,
+		 0.5, -0.5, 0.0
+	};
+	*/
+
 	sVBO.size = verts.size();
 
 	glGenBuffers(1, &sVBO.buff);
 	glBindBuffer(GL_ARRAY_BUFFER, sVBO.buff);
 	glBufferData(
 		GL_ARRAY_BUFFER,
-		sizeof(float) * verts.size(),
+		verts.size() * sizeof (float),
 		&verts[0],
 		GL_STATIC_DRAW
 	);

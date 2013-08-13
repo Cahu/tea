@@ -1,10 +1,13 @@
 #version 330
 
-layout (location = 0) in vec2 p1;
-
 float scale = 1.0/10.0;
+
+uniform mat4 MVP;
+
+layout (location = 0) in vec3 p1;
+
 
 void main()
 {
-    gl_Position = vec4(p1, 0.0, 1/scale);
+    gl_Position = MVP*vec4(p1, 1);
 }
