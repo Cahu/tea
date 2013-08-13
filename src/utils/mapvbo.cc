@@ -1,44 +1,10 @@
 #include <GL/glew.h>
 
 #include "mapvbo.hh"
+#include "geometry.hh"
 
 
-// 72 verts :s
-float cube[] = {
-	 // front
-	-0.5,  0.5,  0.5,
-	 0.5,  0.5,  0.5,
-	 0.5, -0.5,  0.5,
-	-0.5, -0.5,  0.5,
-	 // back
-	-0.5,  0.5, -0.5,
-	 0.5,  0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	-0.5, -0.5, -0.5,
-	 // left
-	-0.5,  0.5,  0.5,
-	-0.5,  0.5, -0.5,
-	-0.5, -0.5, -0.5,
-	-0.5, -0.5,  0.5,
-	 // right
-	 0.5,  0.5,  0.5,
-	 0.5,  0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	 0.5, -0.5,  0.5,
-	 // top
-	-0.5,  0.5,  0.5,
-	-0.5,  0.5, -0.5,
-	 0.5,  0.5, -0.5,
-	 0.5,  0.5,  0.5,
-	 // bottom
-	-0.5, -0.5,  0.5,
-	-0.5, -0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	 0.5, -0.5,  0.5
-};
-
-
-void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
+void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 {
 	std::vector<float> verts;
 	const std::vector<std::vector<char> > &mapdata = map.data();
@@ -49,10 +15,10 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO, unsigned int usize)
 
 			switch (mapdata[i][j]) {
 				case GLYPH_WALL:
-					for (unsigned int k = 0; k < 72; k += 3) {
-						verts.push_back((cube[k+0]+j)*usize);
-						verts.push_back((cube[k+1]+i)*usize);
-						verts.push_back((cube[k+2]+0)*usize);
+					for (unsigned int k = 0; k < CUBE_VERTS; k += 3) {
+						verts.push_back((CUBE[k+0]+j));
+						verts.push_back((CUBE[k+1]+i));
+						verts.push_back((CUBE[k+2]+0));
 					}
 					break;
 				default:
