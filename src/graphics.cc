@@ -17,7 +17,7 @@ mat4 view;
 mat4 proj;
 mat4 MVP;
 
-vec3 base_eye(0.0, -20.0, 10.0);
+vec3 base_eye(0.0, -4.0, 10.0);
 
 
 // config variables

@@ -3,7 +3,7 @@
 #define FLAG_LEFT  0x04
 #define FLAG_RIGHT 0x08
 
-#define PSPEED 0.005  // player default speed
+#define PSPEED 0.002  // player default speed
 
 
 namespace TEA {
