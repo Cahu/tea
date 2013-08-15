@@ -168,10 +168,10 @@ void init_world(const char *file)
 /****** DRAWING MESS ******/
 
 // these are used for all drawing functions
-vec3  rel;
 GLint MP_loc;
 GLint MVP_loc;
 GLint Color_loc;
+vec3  rel, srel;
 
 void draw_map();
 void update_stencil_buff();
@@ -184,7 +184,9 @@ void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 	glLoadIdentity();
 
 	// move everything relative to the followed point
-	rel = vec3(relx, rely, 0.0);
+	rel  = vec3(relx, rely, 0.0);
+	// same thing but relative to screen coordinate system
+	srel = vec3(relx,-rely, 0.0);
 
 	// stencil
 	glUseProgram(stencil_program);
@@ -237,7 +239,8 @@ void draw_players(const std::vector<Player *> &players)
 		float y = p->get_ypos();
 
 		// matrix transformation
-		model = translate(mat4(1.0f), vec3(x, y, 0.f)-rel);
+		// minus y because axis is reversed when rendering!
+		model = translate(mat4(1.0f), vec3(x, -y, 0.f) - srel);
 		MVP = proj * view * model;
 		glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
 		glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));
@@ -253,8 +256,8 @@ void draw_map()
 	glUniform4fv(Color_loc, 1, value_ptr(BLUE));
 
 	// move the map arround the player
-	model = translate(mat4(1.0f), -rel);
 	// map y axis is reversed in respect to the screen y axis
+	model = translate(mat4(1.0f), -srel);
 	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
 
 	MVP = proj * view * model;
