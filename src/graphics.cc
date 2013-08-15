@@ -117,7 +117,7 @@ void init_opengl(void)
 	model = mat4(1.0f);
 
 	view = lookAt(
-		vec3( 0.0 ,  0.0f, 10.0f), // eye
+		vec3( 0.0 ,  0.0f, 40.0f), // eye
 		vec3( 0.0f,  0.0f,  0.0f), // center
 		vec3( 0.0f,  1.0f,  0.0f)  // up
 	);
