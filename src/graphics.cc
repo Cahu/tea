@@ -211,7 +211,11 @@ void draw_map()
 {
 	glUniform4fv(Color_loc, 1, value_ptr(BLUE));
 
+	// move the map arround the player
 	model = translate(mat4(1.0f), -rel);
+	// map y axis is reversed in respect to the screen y axis
+	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
+
 	MVP = proj * view * model;
 	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
 	glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));

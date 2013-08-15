@@ -19,7 +19,7 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 				case GLYPH_WALL:
 					for (unsigned int k = 0; k < CUBE_N_VERTS; k += 3) {
 						verts.push_back((CUBE_VERTS[k+0]+j)*USIZE);
-						verts.push_back((CUBE_VERTS[k+1]-i)*USIZE);
+						verts.push_back((CUBE_VERTS[k+1]+i)*USIZE);
 						verts.push_back((CUBE_VERTS[k+2]+0)*USIZE);
 						normals.push_back(CUBE_NORMALS[k+0]);
 						normals.push_back(CUBE_NORMALS[k+1]);
