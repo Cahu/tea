@@ -1,6 +1,7 @@
 #include "Map.hh"
 #include "utils/splitstr.hh"
 
+#include <cmath>
 #include <cstdio>
 #include <fstream>
 
@@ -95,5 +96,31 @@ namespace TEA {
 	const std::vector< std::vector<char> > &Map::data() const
 	{
 		return _map;
+	}
+
+
+	unsigned int Map::get_width() const
+	{
+		return _width;
+	}
+
+
+	unsigned int Map::get_height() const
+	{
+		return _height;
+	}
+
+
+	bool Map::has_obstacle(unsigned int x, unsigned int y) const
+	{
+		if (y >= _map.size()) {
+			return false;
+		}
+
+		if (x >= _map[y].size()) {
+			return false;
+		}
+
+		return _map[y][x] != GLYPH_EMPTY;
 	}
 }

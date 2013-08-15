@@ -10,7 +10,6 @@
 namespace TEA {
 
 	class Map {
-		protected:
 		unsigned int _width;
 		unsigned int _height;
 		unsigned int _nobstacles;
@@ -25,6 +24,11 @@ namespace TEA {
 		int load(const char *file);
 
 		const std::vector< std::vector<char> > &data() const;
+
+		unsigned int get_width() const;
+		unsigned int get_height() const;
+
+		bool has_obstacle(unsigned int, unsigned int) const;
 	};
 }
 
