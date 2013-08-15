@@ -1,6 +1,6 @@
 #version 330
 
-float scale = 1.0/3.0;
+float scale = 1.0;
 
 uniform mat4 MP;
 uniform mat4 MVP;
