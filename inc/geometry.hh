@@ -1,13 +1,13 @@
 #ifndef _GEOMETRY_H_
 #define _GEOMETRY_H_
 
-#define CUBE_N_VERTS 72
-#define DPYRAMID_N_VERTS 72
+#define CUBE_N_VERTS 24
+#define DPYRAMID_N_VERTS 24
 
-extern float CUBE_VERTS[CUBE_N_VERTS];
-extern float CUBE_NORMALS[CUBE_N_VERTS];
+extern float CUBE_VERTS[3*CUBE_N_VERTS];
+extern float CUBE_NORMALS[3*CUBE_N_VERTS];
 
-extern float DPYRAMID_VERTS[DPYRAMID_N_VERTS];
-extern float DPYRAMID_NORMALS[DPYRAMID_N_VERTS];
+extern float DPYRAMID_VERTS[3*DPYRAMID_N_VERTS];
+extern float DPYRAMID_NORMALS[3*DPYRAMID_N_VERTS];
 
 #endif

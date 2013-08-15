@@ -1,7 +1,7 @@
 #include "geometry.hh"
 
 
-float CUBE_VERTS[CUBE_N_VERTS] = {
+float CUBE_VERTS[3*CUBE_N_VERTS] = {
 	 // front
 	-0.5,  0.5,  0.5,
 	 0.5,  0.5,  0.5,
@@ -35,7 +35,7 @@ float CUBE_VERTS[CUBE_N_VERTS] = {
 };
 
 
-float CUBE_NORMALS[CUBE_N_VERTS] = {
+float CUBE_NORMALS[3*CUBE_N_VERTS] = {
 	 // front
 	0.0, 0.0, 1.0,
 	0.0, 0.0, 1.0,
@@ -70,7 +70,7 @@ float CUBE_NORMALS[CUBE_N_VERTS] = {
 
 
 
-float DPYRAMID_VERTS[DPYRAMID_N_VERTS] = {
+float DPYRAMID_VERTS[3*DPYRAMID_N_VERTS] = {
 	// top half
 	// front
 	 0.0, 0.0, 0.5,
@@ -108,7 +108,7 @@ float DPYRAMID_VERTS[DPYRAMID_N_VERTS] = {
 };
 
 
-float DPYRAMID_NORMALS[DPYRAMID_N_VERTS] = {
+float DPYRAMID_NORMALS[3*DPYRAMID_N_VERTS] = {
 	// top half
 	// front
 	 0.0, 0.707, 0.707,
