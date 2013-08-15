@@ -33,7 +33,8 @@ static Map map;
 static structVBO mapvbo;
 static structVBO playervbo;
 static structVBO stencil;
-static GLuint default_shader;
+static GLuint default_program;
+static GLuint stencil_program;
 
 
 void init_sdl(void)
@@ -45,6 +46,7 @@ void init_sdl(void)
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 	// TODO: cleanup the object returned by SetVideoMode
 	if (!SDL_SetVideoMode(WIDTH, HEIGHT, 0, SDL_OPENGL)) {
@@ -69,8 +71,11 @@ void init_opengl(void)
 	// default stuff
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
+
 	glClearDepth(1.0);
+	glClearStencil(0x0);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
 
 
@@ -97,35 +102,59 @@ void init_opengl(void)
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// shaders stuff
+
+	/** shaders **/
+	GLuint vshader, fshader;
 	std::vector<GLuint> shaders;
 
-	GLuint vshader = load_shader(GL_VERTEX_SHADER, "shaders/default.vert");
+	// default shader
+	shaders.clear();
+	vshader = load_shader(GL_VERTEX_SHADER, "shaders/default.vert");
 	if (vshader == 0) { exit(EXIT_FAILURE); }
-
-	GLuint fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag");
+	fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag");
 	if (fshader == 0) { exit(EXIT_FAILURE); }
-
 	shaders.push_back(vshader);
 	shaders.push_back(fshader);
-	default_shader = make_program(shaders);
-	if (default_shader == 0) { exit(EXIT_FAILURE); }
+	default_program = make_program(shaders);
+	if (default_program == 0) { exit(EXIT_FAILURE); }
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
-	// set projection matrix
-	model = mat4(1.0f);
+	// stencil shader (minimum computation!)
+	shaders.clear();
+	vshader = load_shader(GL_VERTEX_SHADER, "shaders/stencil.vert");
+	if (vshader == 0) { exit(EXIT_FAILURE); }
+	fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/stencil.frag");
+	if (fshader == 0) { exit(EXIT_FAILURE); }
+	shaders.push_back(vshader);
+	shaders.push_back(fshader);
+	stencil_program = make_program(shaders);
+	if (stencil_program == 0) { exit(EXIT_FAILURE); }
+	glDeleteShader(vshader);
+	glDeleteShader(fshader);
 
+
+	// set MVP matrix
+	model = mat4(1.0f);
 	view = lookAt(
 		vec3( 0.0 ,  0.0f, 40.0f), // eye
 		vec3( 0.0f,  0.0f,  0.0f), // center
 		vec3( 0.0f,  1.0f,  0.0f)  // up
 	);
-
 	proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
-
 	MVP = proj * view * model;
 
+
+	// stencil vbo
+	stencil.size = DPYRAMID_N_VERTS;
+	glGenBuffers(1, &stencil.verts);
+	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof CUBE_VERTS,
+		CUBE_VERTS,
+		GL_DYNAMIC_DRAW
+	);
 }
 
 
@@ -151,24 +180,36 @@ void draw_players(const std::vector<Player *> &);
 
 void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 	glLoadIdentity();
-
-	// setup
-	glUseProgram(default_shader);
-	MP_loc    = glGetUniformLocation(default_shader, "MP");
-	MVP_loc   = glGetUniformLocation(default_shader, "MVP");
-	Color_loc = glGetUniformLocation(default_shader, "Color");
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
 
 	// move everything relative to the followed point
 	rel = vec3(relx, rely, 0.0);
 
-	draw_map();
+	// stencil
+	glUseProgram(stencil_program);
+	MVP_loc = glGetUniformLocation(stencil_program, "MVP");
 
+	glEnableVertexAttribArray(0);
+
+	update_stencil_buff();
+
+	glDisableVertexAttribArray(0);
+
+
+	// drawing
+	glUseProgram(default_program);
+	MP_loc    = glGetUniformLocation(default_program, "MP");
+	MVP_loc   = glGetUniformLocation(default_program, "MVP");
+	Color_loc = glGetUniformLocation(default_program, "Color");
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glDisable(GL_STENCIL_TEST);
 	draw_players(players);
+
+	glEnable(GL_STENCIL_TEST);
+	draw_map();
 
 	// cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -225,7 +266,27 @@ void draw_map()
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.normals);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_QUADS, 0, mapvbo.size);
-
 }
 
 
+void update_stencil_buff()
+{
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	model = translate(mat4(1.0f), vec3(0.4, -0.4, 0.0)-rel);
+	MVP = proj * view * model;
+	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
+
+	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glDrawArrays(GL_QUADS, 0, stencil.size);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+}
