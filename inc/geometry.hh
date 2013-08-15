@@ -1,34 +1,13 @@
-#define CUBE_VERTS 72
+#ifndef _GEOMETRY_H_
+#define _GEOMETRY_H_
 
-float CUBE[CUBE_VERTS] = {
-	 // front
-	-0.5,  0.5,  0.5,
-	 0.5,  0.5,  0.5,
-	 0.5, -0.5,  0.5,
-	-0.5, -0.5,  0.5,
-	 // back
-	-0.5,  0.5, -0.5,
-	 0.5,  0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	-0.5, -0.5, -0.5,
-	 // left
-	-0.5,  0.5,  0.5,
-	-0.5,  0.5, -0.5,
-	-0.5, -0.5, -0.5,
-	-0.5, -0.5,  0.5,
-	 // right
-	 0.5,  0.5,  0.5,
-	 0.5,  0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	 0.5, -0.5,  0.5,
-	 // top
-	-0.5,  0.5,  0.5,
-	-0.5,  0.5, -0.5,
-	 0.5,  0.5, -0.5,
-	 0.5,  0.5,  0.5,
-	 // bottom
-	-0.5, -0.5,  0.5,
-	-0.5, -0.5, -0.5,
-	 0.5, -0.5, -0.5,
-	 0.5, -0.5,  0.5
-};
+#define CUBE_N_VERTS 72
+#define DPYRAMID_N_VERTS 72
+
+extern float CUBE_VERTS[CUBE_N_VERTS];
+extern float CUBE_NORMALS[CUBE_N_VERTS];
+
+extern float DPYRAMID_VERTS[DPYRAMID_N_VERTS];
+extern float DPYRAMID_NORMALS[DPYRAMID_N_VERTS];
+
+#endif
