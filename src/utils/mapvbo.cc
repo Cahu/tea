@@ -3,10 +3,12 @@
 #include "mapvbo.hh"
 #include "geometry.hh"
 
+#define USIZE 2   // make walls two times the unit size
+
 
 void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 {
-	std::vector<float> verts;
+	std::vector<float> verts, normals;
 	const std::vector<std::vector<char> > &mapdata = map.data();
 
 	for (unsigned int i = 0; i < mapdata.size(); i++) {
@@ -15,10 +17,13 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 
 			switch (mapdata[i][j]) {
 				case GLYPH_WALL:
-					for (unsigned int k = 0; k < CUBE_VERTS; k += 3) {
-						verts.push_back((CUBE[k+0]+j));
-						verts.push_back((CUBE[k+1]+i));
-						verts.push_back((CUBE[k+2]+0));
+					for (unsigned int k = 0; k < CUBE_N_VERTS; k += 3) {
+						verts.push_back((CUBE_VERTS[k+0]+j)*USIZE);
+						verts.push_back((CUBE_VERTS[k+1]-i)*USIZE);
+						verts.push_back((CUBE_VERTS[k+2]+0)*USIZE);
+						normals.push_back(CUBE_NORMALS[k+0]);
+						normals.push_back(CUBE_NORMALS[k+1]);
+						normals.push_back(CUBE_NORMALS[k+2]);
 					}
 					break;
 				default:
@@ -29,13 +34,22 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 
 	sVBO.size = verts.size();
 
-	glGenBuffers(1, &sVBO.buff);
-	glBindBuffer(GL_ARRAY_BUFFER, sVBO.buff);
+	glGenBuffers(1, &sVBO.verts);
+	glGenBuffers(1, &sVBO.normals);
+
+	glBindBuffer(GL_ARRAY_BUFFER, sVBO.verts);
 	glBufferData(
 		GL_ARRAY_BUFFER,
 		verts.size() * sizeof (float),
 		&verts[0],
 		GL_STATIC_DRAW
 	);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, sVBO.normals);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		normals.size() * sizeof (float),
+		&normals[0],
+		GL_STATIC_DRAW
+	);
 }

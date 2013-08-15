@@ -1,8 +1,11 @@
 #version 330
 
-out vec4 FragColor;
+smooth in vec4 FragColor;
+
+out vec4 FinalColor;
 
 void main()
 {
-   FragColor = vec4(0.7, 0.7, 0.9, 1.0);
+   FinalColor = FragColor;
+   //FinalColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

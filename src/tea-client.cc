@@ -53,7 +53,7 @@ static std::vector<Player *> players;
 void init_sdl();
 void init_opengl();
 void init_world(const char *);
-void draw_scene(float, float);
+void draw_scene(const std::vector<Player *> &, float, float);
 
 // local events
 static int handle_sdl_events(flag_t *);
@@ -150,9 +150,10 @@ int main(int argc, char *argv[])
 
 		// draw
 		if (playing) {
-			draw_scene(players[id]->get_xpos(), players[id]->get_ypos());
+			Player *p = players[id];
+			draw_scene(players, p->get_xpos(), p->get_ypos());
 		} else {
-			draw_scene(0, 0);
+			draw_scene(players, 0, 0);
 		}
 
 		// sleep

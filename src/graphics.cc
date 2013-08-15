@@ -5,10 +5,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Player.hh"
 #include "shaders.hh"
+#include "geometry.hh"
 #include "utils/mapvbo.hh"
 
 using TEA::Map;
+using TEA::Player;
 using namespace glm;
 
 // projection and aspect ratio
@@ -17,15 +20,19 @@ mat4 view;
 mat4 proj;
 mat4 MVP;
 
-vec3 base_eye(0.0, -4.0, 10.0);
+// predefined colors
+vec4 RED (1.0, 0.0, 0.0, 1.0);
+vec4 BLUE(0.8, 0.8, 1.0, 1.0);
 
 
 // config variables
-static unsigned int WIDTH  = 800;
-static unsigned int HEIGHT = 600;
+static unsigned int WIDTH  = 600;
+static unsigned int HEIGHT = 400;
 
 static Map map;
 static structVBO mapvbo;
+static structVBO playervbo;
+static structVBO stencil;
 static GLuint default_shader;
 
 
@@ -63,7 +70,33 @@ void init_opengl(void)
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
+
+	// build the player model vbo
+	playervbo.size = DPYRAMID_N_VERTS;
+	glGenBuffers(1, &playervbo.verts);
+	glGenBuffers(1, &playervbo.normals);
+
+	glBindBuffer(GL_ARRAY_BUFFER, playervbo.verts);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof DPYRAMID_VERTS,
+		DPYRAMID_VERTS,
+		GL_STATIC_DRAW
+	);
+
+	glBindBuffer(GL_ARRAY_BUFFER, playervbo.normals);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof DPYRAMID_NORMALS,
+		DPYRAMID_NORMALS,
+		GL_STATIC_DRAW
+	);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// shaders stuff
 	std::vector<GLuint> shaders;
 
@@ -81,23 +114,17 @@ void init_opengl(void)
 	glDeleteShader(fshader);
 
 	// set projection matrix
-	GLint MVP_loc = glGetUniformLocation(default_shader, "MVP");
-	if (-1 == MVP_loc) {
-		fprintf(stderr, "Can't set MVP matrix\n");
-		exit(EXIT_FAILURE);
-	} else {
-		view = lookAt(
-			base_eye, // eye
-			vec3( 0.0f,   0.0f,   0.0f), // center
-			vec3( 0.0f,   1.0f,   0.0f)  // up
-		);
+	model = mat4(1.0f);
 
-		proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
+	view = lookAt(
+		vec3( 0.0 ,  0.0f, 10.0f), // eye
+		vec3( 0.0f,  0.0f,  0.0f), // center
+		vec3( 0.0f,  1.0f,  0.0f)  // up
+	);
 
-		model  = translate(mat4(1.0f), vec3(0.f, 0.f, 0.f));
+	proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
 
-		MVP = proj * view * model;
-	}
+	MVP = proj * view * model;
 
 }
 
@@ -109,31 +136,92 @@ void init_world(const char *file)
 }
 
 
-void draw_scene(float relx, float rely)
+/****** DRAWING MESS ******/
+
+// these are used for all drawing functions
+vec3  rel;
+GLint MP_loc;
+GLint MVP_loc;
+GLint Color_loc;
+
+void draw_map();
+void update_stencil_buff();
+void draw_players(const std::vector<Player *> &);
+
+
+void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	view = lookAt(
-		vec3( base_eye + vec3(relx, rely, 0.0)), // eye
-		vec3(            vec3(relx, rely, 0.0)), // center
-		vec3(            vec3(0.0,   1.0, 0.0))  // up
-	);
-	MVP = proj * view * model;
-
-	// draw map
+	// setup
 	glUseProgram(default_shader);
+	MP_loc    = glGetUniformLocation(default_shader, "MP");
+	MVP_loc   = glGetUniformLocation(default_shader, "MVP");
+	Color_loc = glGetUniformLocation(default_shader, "Color");
 
-	GLint MVP_loc = glGetUniformLocation(default_shader, "MVP");
-	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
-
-	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.buff);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+	glEnableVertexAttribArray(1);
 
+	// move everything relative to the followed point
+	rel = vec3(relx, rely, 0.0);
+
+	draw_map();
+
+	draw_players(players);
+
+	// cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
 
 	SDL_GL_SwapBuffers();
 }
+
+
+void draw_players(const std::vector<Player *> &players)
+{
+	glUniform4fv(Color_loc, 1, value_ptr(RED));
+
+	glBindBuffer(GL_ARRAY_BUFFER, playervbo.verts);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, playervbo.normals);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	for (unsigned int i = 0; i < players.size(); i++) {
+		Player *p = players[i];
+		if (p == NULL) continue;
+
+		float x = p->get_xpos();
+		float y = p->get_ypos();
+
+		// matrix transformation
+		model = translate(mat4(1.0f), vec3(x, y, 0.f)-rel);
+		MVP = proj * view * model;
+		glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
+		glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));
+
+		// draw
+		glDrawArrays(GL_TRIANGLES, 0, playervbo.size);
+	}
+}
+
+
+void draw_map()
+{
+	glUniform4fv(Color_loc, 1, value_ptr(BLUE));
+
+	model = translate(mat4(1.0f), -rel);
+	MVP = proj * view * model;
+	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
+	glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));
+
+	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.verts);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.normals);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+
+}
+
+

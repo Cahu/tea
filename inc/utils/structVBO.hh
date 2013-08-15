@@ -6,7 +6,8 @@
 
 
 struct structVBO {
-	GLuint buff;
+	GLuint verts;
+	GLuint normals;
 	size_t size;
 };
 
