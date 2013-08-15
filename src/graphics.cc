@@ -153,7 +153,7 @@ void init_opengl(void)
 		GL_ARRAY_BUFFER,
 		sizeof CUBE_VERTS,
 		CUBE_VERTS,
-		GL_DYNAMIC_DRAW
+		GL_STREAM_DRAW
 	);
 }
 
