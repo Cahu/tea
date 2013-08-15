@@ -16,7 +16,6 @@ namespace TEA {
 
 	Map::Map()
 	{
-		_nobstacles = 0;
 		_height = 0;
 		_width = 0;
 	}
@@ -24,7 +23,6 @@ namespace TEA {
 
 	Map::Map(const char *file)
 	{
-		_nobstacles = 0;
 		_height = 0;
 		_width = 0;
 		load(file);
@@ -41,26 +39,26 @@ namespace TEA {
 
 		_width = 0;
 		_height = 0;
-		_nobstacles = 0;
 		_map.clear();
+		_obstacles.clear();
 
 		_height++;
 		_map.push_back(std::vector<char>());
 
 		char c;
-		unsigned int tmp_width = 0;
+		unsigned int x = 0;
 		while (EOF != (c = f.get())) {
-			tmp_width++;
+			x++;
 
 			switch (c) {
 				case '\n':
 					_height++;
-					_width = MAX(_width, tmp_width);
-					_map.push_back(std::vector<char>());
-					tmp_width = 0;
+					_width = MAX(_width, x);
+					_map.push_back(std::vector<char>()); // add row
+					x = 0;
 					break;
 				case GLYPH_WALL:
-					_nobstacles++;
+					_obstacles.push_back(Coor(x-1, _height-1));
 				case GLYPH_EMPTY:
 				default:
 					_map.back().push_back(c);
@@ -96,6 +94,12 @@ namespace TEA {
 	const std::vector< std::vector<char> > &Map::data() const
 	{
 		return _map;
+	}
+
+
+	const std::vector< Coor > &Map::get_obstacles() const
+	{
+		return _obstacles;
 	}
 
 

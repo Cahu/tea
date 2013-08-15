@@ -6,14 +6,20 @@
 #define GLYPH_EMPTY ' '
 #define GLYPH_WALL  '#'
 
+struct Coor {
+	unsigned int x;
+	unsigned int y;
+	Coor(unsigned int xx, unsigned int yy) : x(xx), y(yy) {};
+};
+
 
 namespace TEA {
 
 	class Map {
 		unsigned int _width;
 		unsigned int _height;
-		unsigned int _nobstacles;
 
+		std::vector< Coor > _obstacles;
 		std::vector< std::vector<char> > _map;
 
 		public:
@@ -23,6 +29,7 @@ namespace TEA {
 		void print() const;
 		int load(const char *file);
 
+		const std::vector< Coor > &get_obstacles() const;
 		const std::vector< std::vector<char> > &data() const;
 
 		unsigned int get_width() const;
