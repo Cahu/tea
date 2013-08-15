@@ -58,7 +58,9 @@ namespace TEA {
 					x = 0;
 					break;
 				case GLYPH_WALL:
-					_obstacles.push_back(Coor(x-1, _height-1));
+					_obstacles.push_back(
+						Coor(MAPUSIZE*(x-1), MAPUSIZE*(_height-1))
+					);
 				case GLYPH_EMPTY:
 				default:
 					_map.back().push_back(c);
@@ -115,7 +117,7 @@ namespace TEA {
 	}
 
 
-	bool Map::has_obstacle(unsigned int x, unsigned int y) const
+	bool Map::tile_has_obstacle(unsigned int x, unsigned int y) const
 	{
 		if (y >= _map.size()) {
 			return false;

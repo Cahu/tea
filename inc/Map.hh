@@ -6,6 +6,8 @@
 #define GLYPH_EMPTY ' '
 #define GLYPH_WALL  '#'
 
+#define MAPUSIZE 2   // make walls two times the unit size
+
 struct Coor {
 	unsigned int x;
 	unsigned int y;
@@ -35,7 +37,7 @@ namespace TEA {
 		unsigned int get_width() const;
 		unsigned int get_height() const;
 
-		bool has_obstacle(unsigned int, unsigned int) const;
+		bool tile_has_obstacle(unsigned int, unsigned int) const;
 	};
 }
 

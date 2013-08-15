@@ -3,8 +3,6 @@
 #include "mapvbo.hh"
 #include "geometry.hh"
 
-#define USIZE 2   // make walls two times the unit size
-
 
 void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 {
@@ -18,9 +16,9 @@ void map_to_VBO(const TEA::Map &map, structVBO &sVBO)
 			switch (mapdata[i][j]) {
 				case GLYPH_WALL:
 					for (unsigned int k = 0; k < 3*CUBE_N_VERTS; k += 3) {
-						verts.push_back((CUBE_VERTS[k+0]+j)*USIZE);
-						verts.push_back((CUBE_VERTS[k+1]+i)*USIZE);
-						verts.push_back((CUBE_VERTS[k+2]+0)*USIZE);
+						verts.push_back((CUBE_VERTS[k+0]+j)*MAPUSIZE);
+						verts.push_back((CUBE_VERTS[k+1]+i)*MAPUSIZE);
+						verts.push_back((CUBE_VERTS[k+2]+0)*MAPUSIZE);
 						normals.push_back(CUBE_NORMALS[k+0]);
 						normals.push_back(CUBE_NORMALS[k+1]);
 						normals.push_back(CUBE_NORMALS[k+2]);
