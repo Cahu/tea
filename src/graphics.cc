@@ -78,6 +78,9 @@ void init_opengl(void)
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
 
+	// prepare stencil shapes VBO
+	stencil.size = 0;
+	glGenBuffers(1, &stencil.verts);
 
 	// build the player model vbo
 	playervbo.size = DPYRAMID_N_VERTS;
@@ -144,17 +147,6 @@ void init_opengl(void)
 	proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
 	MVP = proj * view * model;
 
-
-	// stencil vbo
-	stencil.size = DPYRAMID_N_VERTS;
-	glGenBuffers(1, &stencil.verts);
-	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		sizeof CUBE_VERTS,
-		CUBE_VERTS,
-		GL_STREAM_DRAW
-	);
 }
 
 
@@ -207,10 +199,10 @@ void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glDisable(GL_STENCIL_TEST);
+	//glDisable(GL_STENCIL_TEST);
 	draw_players(players);
 
-	glEnable(GL_STENCIL_TEST);
+	//glEnable(GL_STENCIL_TEST);
 	draw_map();
 
 	// cleanup
@@ -272,24 +264,153 @@ void draw_map()
 }
 
 
+void vector_append_vec(std::vector<float> &dst, vec3 vec)
+{
+	// don't forget the '-' sign on y axis!
+	dst.push_back( vec.x);
+	dst.push_back(-vec.y);
+	dst.push_back( vec.z);
+}
+
+
+void proj_face(
+	std::vector<float> &dst,
+	vec3 corner1,
+	vec3 corner2,
+	double radius
+) {
+	vec3 uni;
+	vec3 center = (corner1 + corner2) * vec3(0.5, 0.5, 0.5);
+
+	// Cast the basic shadow
+	uni = normalize(corner1 - rel);
+	vec3 proj1 = rel + uni * vec3(radius, radius, radius);
+	vector_append_vec(dst, corner1);
+	vector_append_vec(dst, proj1  );
+
+	uni = normalize(corner2 - rel);
+	vec3 proj2 = rel + uni * vec3(radius, radius, radius);
+	vector_append_vec(dst, proj2  );
+	vector_append_vec(dst, corner2);
+
+	// get perpendicular vector of proj1 --> proj2 to create a rectangle that
+	// will hide holes in some particular cases (when the slope is too high).
+	// For instance:
+	// +------------/|------------+
+	// |           / |            |
+	// |          /  |            |
+	// |         +----+   we have |
+	// |        /|   ||   a hole  | -> fill the hole with a rectangle
+	// |       o |   ||   here    |    using a perpendicular vector to
+	// |        \+----+           |    the farthest side of the shadow
+	// |         \   |            |
+	// +----------\--|------------+
+	vec3 proj12 = proj2 - proj1;
+	vec3 comp = normalize(vec3(-proj12.y, proj12.x, proj12.z));
+	vector_append_vec(dst, proj1);
+	vector_append_vec(dst, proj1 - comp * vec3(radius, radius, radius));
+	vector_append_vec(dst, proj2 - comp * vec3(radius, radius, radius));
+	vector_append_vec(dst, proj2);
+}
+
 void update_stencil_buff()
 {
-	glDisable(GL_DEPTH_TEST);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	const std::vector< Coor > &obs = map.get_obstacles();
 
-	model = translate(mat4(1.0f), vec3(0.4, -0.4, 0.0)-rel);
+	// nothing to do
+	if (obs.size() == 0) {
+		return;
+	}
+
+	// use a sphere big enough to cover the screen to cast projections on it
+	//double proj_length = 10;
+	double proj_length = map.get_width() + map.get_height();
+
+	// draw shadows of:
+	// at most 2 sides of the obstacle,
+	// 3 shadow parts per side,
+	// with 4 verts each,
+	size_t prediction = obs.size() * 4 * 3 * 2;
+	size_t real_size = 0;
+
+	// realloc if insuficient space
+	if (stencil.size < prediction) {
+		if (stencil.size == 0) {
+			stencil.size = prediction;
+		} else {
+			stencil.size *= 2; // exponential growth
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			stencil.size * 3 * sizeof(float), // 3 coors per vertex
+			NULL,
+			GL_STREAM_DRAW
+		);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	std::vector< float > shadows_verts;
+	shadows_verts.reserve(prediction*3);
+	for (unsigned int i = 0; i < obs.size(); i++) {
+		// obstacle center
+		Coor c = obs[i];
+
+		// make sure to pass corners in the right order to proj_face
+		if (rel.x < (c.x - MAPUSIZE/2)) {
+			// we can see the left side of the obstacle
+			vec3 tl_corner = vec3(c.x-MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
+			vec3 bl_corner = vec3(c.x-MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			proj_face(shadows_verts, tl_corner, bl_corner, proj_length);
+		}
+		else if (rel.x > (c.x + MAPUSIZE/2)) {
+			// we can see the right side of the obstacle
+			vec3 tr_corner = vec3(c.x+MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
+			vec3 br_corner = vec3(c.x+MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			proj_face(shadows_verts, br_corner, tr_corner, proj_length);
+		}
+
+		if (rel.y < (c.y - MAPUSIZE/2)) {
+			// we can see the top side of the obstacle
+			vec3 tl_corner = vec3(c.x+MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
+			vec3 tr_corner = vec3(c.x-MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
+			proj_face(shadows_verts, tl_corner, tr_corner, proj_length);
+		}
+		else if (rel.y > (c.y + MAPUSIZE/2)) {
+			// we can see the bottom side of the obstacle
+			vec3 bl_corner = vec3(c.x+MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			vec3 br_corner = vec3(c.x-MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			proj_face(shadows_verts, br_corner, bl_corner, proj_length);
+		}
+	}
+
+	//return;
+	stencil.size = shadows_verts.size()/3;
+	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		0,
+		shadows_verts.size() * sizeof(float),
+		&shadows_verts[0]
+	);
+
+	//glDisable(GL_DEPTH_TEST);
+	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	model = translate(mat4(1.0f), -srel);
 	MVP = proj * view * model;
 	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
 
 	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glStencilFunc(GL_ALWAYS, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	//glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glDrawArrays(GL_QUADS, 0, stencil.size);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	//glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	//glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
+	//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	//glEnable(GL_DEPTH_TEST);
 }

@@ -9,9 +9,9 @@
 #define MAPUSIZE 2   // make walls two times the unit size
 
 struct Coor {
-	unsigned int x;
-	unsigned int y;
-	Coor(unsigned int xx, unsigned int yy) : x(xx), y(yy) {};
+	double x;
+	double y;
+	Coor(double xx, double yy) : x(xx), y(yy) {};
 };
 
 
