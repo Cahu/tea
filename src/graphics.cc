@@ -266,10 +266,9 @@ void draw_map()
 
 void vector_append_vec(std::vector<float> &dst, vec3 vec)
 {
-	// don't forget the '-' sign on y axis!
-	dst.push_back( vec.x);
-	dst.push_back(-vec.y);
-	dst.push_back( vec.z);
+	dst.push_back(vec.x);
+	dst.push_back(vec.y);
+	dst.push_back(vec.z);
 }
 
 
@@ -323,14 +322,13 @@ void update_stencil_buff()
 	}
 
 	// use a sphere big enough to cover the screen to cast projections on it
-	//double proj_length = 10;
 	double proj_length = map.get_width() + map.get_height();
 
 	// draw shadows of:
 	// at most 2 sides of the obstacle,
-	// 3 shadow parts per side,
+	// 2 shadow parts per side,
 	// with 4 verts each,
-	size_t prediction = obs.size() * 4 * 3 * 2;
+	size_t prediction = obs.size() * 4 * 2 * 2;
 	size_t real_size = 0;
 
 	// realloc if insuficient space
@@ -351,6 +349,7 @@ void update_stencil_buff()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	// cast shadows
 	std::vector< float > shadows_verts;
 	shadows_verts.reserve(prediction*3);
 	for (unsigned int i = 0; i < obs.size(); i++) {
@@ -358,6 +357,7 @@ void update_stencil_buff()
 		Coor c = obs[i];
 
 		// make sure to pass corners in the right order to proj_face
+		// (important for the completion rectangle trick)
 		if (rel.x < (c.x - MAPUSIZE/2)) {
 			// we can see the left side of the obstacle
 			vec3 tl_corner = vec3(c.x-MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
@@ -385,7 +385,7 @@ void update_stencil_buff()
 		}
 	}
 
-	//return;
+	// update stencil buffer content
 	stencil.size = shadows_verts.size()/3;
 	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
 	glBufferSubData(
@@ -398,7 +398,8 @@ void update_stencil_buff()
 	//glDisable(GL_DEPTH_TEST);
 	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	model = translate(mat4(1.0f), -srel);
+	model  = translate(mat4(1.0f), -srel);
+	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
 	MVP = proj * view * model;
 	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
 
