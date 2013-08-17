@@ -25,5 +25,5 @@ void main()
 	vec3  dirvec           = LightPos - vec3(MP * vec4(position, 1/scale));
 	float incidence_cosine = clamp(dot(normalize(dirvec), normal), 0, 1);
 
-	FragColor = Color*(Ambiant+LightCol*incidence_cosine*10/length(dirvec));
+	FragColor = Color*(Ambiant+LightCol*incidence_cosine*20/length(dirvec));
 }
