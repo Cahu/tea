@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 	}
 
 	id = handle_handshake();
-	if (id < 0) {
+	if ((int) id == -1) {
 		fprintf(stderr, "Error during handshake\n");
 		exitval = EXIT_FAILURE;
 		goto END;
