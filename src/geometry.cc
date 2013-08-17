@@ -1,6 +1,21 @@
 #include "geometry.hh"
 
 
+float TILE_VERTS[3*TILE_N_VERTS] = {
+	-0.5,  0.5,  0.0,
+	 0.5,  0.5,  0.0,
+	 0.5, -0.5,  0.0,
+	-0.5, -0.5,  0.0
+};
+
+float TILE_NORMALS[3*TILE_N_VERTS] = {
+	 0.0,  0.0,  1.0,
+	 0.0,  0.0,  1.0,
+	 0.0,  0.0,  1.0,
+	 0.0,  0.0,  1.0
+};
+
+
 float CUBE_VERTS[3*CUBE_N_VERTS] = {
 	 // front
 	-0.5,  0.5,  0.5,

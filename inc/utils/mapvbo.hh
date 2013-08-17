@@ -4,4 +4,4 @@
 #include "structVBO.hh"
 
 
-void map_to_VBO(const TEA::Map &, structVBO &);
+void map_to_VBO(const TEA::Map &, structVBO &, structVBO &);

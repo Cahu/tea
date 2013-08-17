@@ -21,8 +21,9 @@ mat4 proj;
 mat4 MVP;
 
 // predefined colors
-vec4 RED (1.0, 0.0, 0.0, 1.0);
-vec4 BLUE(0.8, 0.8, 1.0, 1.0);
+vec4 RED  (1.0, 0.0, 0.0, 1.0);
+vec4 BLUE (0.7, 0.7, 1.0, 1.0);
+vec4 BLACK(0.05, 0.05, 0.1, 1.0);
 
 
 // config variables
@@ -31,6 +32,7 @@ static unsigned int HEIGHT = 400;
 
 static Map map;
 static structVBO mapvbo;
+static structVBO floorvbo;
 static structVBO playervbo;
 static structVBO stencil;
 static GLuint default_program;
@@ -77,6 +79,13 @@ void init_opengl(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
+
+	// VBOs for the map
+	glGenBuffers(1, &mapvbo.verts);
+	glGenBuffers(1, &mapvbo.normals);
+	glGenBuffers(1, &floorvbo.verts);
+	glGenBuffers(1, &floorvbo.normals);
+
 
 	// prepare stencil shapes VBO
 	stencil.size = 0;
@@ -153,7 +162,7 @@ void init_opengl(void)
 void init_world(const char *file)
 {
 	map.load(file);
-	map_to_VBO(map, mapvbo);
+	map_to_VBO(map, mapvbo, floorvbo);
 }
 
 
@@ -166,6 +175,7 @@ GLint Color_loc;
 vec3  rel, srel;
 
 void draw_map();
+void draw_floor();
 void update_stencil_buff();
 void draw_players(const std::vector<Player *> &);
 
@@ -199,11 +209,10 @@ void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	//glDisable(GL_STENCIL_TEST);
-	draw_players(players);
-
-	//glEnable(GL_STENCIL_TEST);
 	draw_map();
+
+	draw_floor();
+	draw_players(players);
 
 	// cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -245,22 +254,41 @@ void draw_players(const std::vector<Player *> &players)
 
 void draw_map()
 {
-	glUniform4fv(Color_loc, 1, value_ptr(BLUE));
-
 	// move the map arround the player
 	// map y axis is reversed in respect to the screen y axis
-	model = translate(mat4(1.0f), -srel);
+	model  = translate(mat4(1.0f), -srel);
 	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
 
 	MVP = proj * view * model;
 	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
 	glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));
 
+	glUniform4fv(Color_loc, 1, value_ptr(BLUE));
+
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.verts);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.normals);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+}
+
+
+void draw_floor()
+{
+	model  = translate(mat4(1.0f), -srel);
+	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
+
+	MVP = proj * view * model;
+	glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, value_ptr(MVP));
+	glUniformMatrix4fv(MP_loc, 1, GL_FALSE, value_ptr(model));
+
+	glUniform4fv(Color_loc, 1, value_ptr(BLACK));
+
+	glBindBuffer(GL_ARRAY_BUFFER, floorvbo.verts);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, floorvbo.normals);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glDrawArrays(GL_QUADS, 0, floorvbo.size);
 }
 
 
