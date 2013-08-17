@@ -38,6 +38,12 @@ namespace TEA {
 		unsigned int get_height() const;
 
 		bool tile_has_obstacle(unsigned int, unsigned int) const;
+
+		bool on_same_row(const Coor &, const Coor &) const;
+		bool on_same_col(const Coor &, const Coor &) const;
+		bool on_same_tile(const Coor &, const Coor &) const;
+
+		void tile_path(std::vector<Coor> &, const Coor &, const Coor &) const;
 	};
 }
 
