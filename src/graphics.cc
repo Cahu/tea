@@ -144,7 +144,7 @@ void init_opengl(void)
 		vec3( 0.0f,  0.0f,  0.0f), // center
 		vec3( 0.0f,  1.0f,  0.0f)  // up
 	);
-	proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 0.1f, 100.0f);
+	proj = perspective(45.0f, 1.0f*WIDTH/HEIGHT, 35.0f, 45.0f);
 	MVP = proj * view * model;
 
 }
