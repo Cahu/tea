@@ -298,11 +298,11 @@ void proj_face(
 	// |           / |            |
 	// |          /  |            |
 	// |         +----+   we have |
-	// |        /|   ||   a hole  | -> fill the hole with a rectangle
+	// |         |   ||   a hole  | -> fill the hole with a rectangle
 	// |       o |   ||   here    |    using a perpendicular vector to
-	// |        \+----+           |    the farthest side of the shadow
-	// |         \   |            |
-	// +----------\--|------------+
+	// |         +----+           |    the farthest side of the shadow
+	// |          \  |            |
+	// +-----------\-|------------+
 	vec3 proj12 = proj2 - proj1;
 	vec3 comp = normalize(vec3(-proj12.y, proj12.x, proj12.z));
 	vector_append_vec(dst, proj1);
