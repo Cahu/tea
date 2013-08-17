@@ -133,13 +133,13 @@ namespace TEA {
 
 	bool Map::on_same_row(const Coor &a, const Coor &b) const
 	{
-		return (floor(a.y) == floor(b.y));
+		return (floor(a.y/MAPUSIZE) == floor(b.y/MAPUSIZE));
 	}
 
 
 	bool Map::on_same_col(const Coor &a, const Coor &b) const
 	{
-		return (floor(a.x) == floor(b.x));
+		return (floor(a.x/MAPUSIZE) == floor(b.x/MAPUSIZE));
 	}
 
 
@@ -166,8 +166,9 @@ namespace TEA {
 
 		// find out how many loops are necessary:
 		unsigned int n;
-		n  = (unsigned int) ceil(std::abs(e.x - s.x) / MAPUSIZE);
-		n += (unsigned int) ceil(std::abs(e.y - s.y) / MAPUSIZE);
+		n  = std::abs(e.x - s.x) / MAPUSIZE;
+		n += std::abs(e.y - s.y) / MAPUSIZE;
+		n += 1;
 
 		while (n--) {
 			dst.push_back(Coor(floor(x/MAPUSIZE), floor(y/MAPUSIZE)));
@@ -224,8 +225,8 @@ namespace TEA {
 				// special case: went right through the corner, don't allow
 				// that by adding a tile as transition. We choose to add the
 				// one on the same column.
-				   (0 != on_same_col(Coor(oldx, oldy), Coor(x, y)))
-				&& (0 != on_same_row(Coor(oldx, oldy), Coor(x, y)))
+				   (!on_same_col(Coor(oldx, oldy), Coor(x, y)))
+				&& (!on_same_row(Coor(oldx, oldy), Coor(x, y)))
 			   ) {
 				dst.push_back(Coor(floor(oldx/MAPUSIZE), floor(y/MAPUSIZE)));
 			}
