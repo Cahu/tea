@@ -209,8 +209,10 @@ void draw_scene(const std::vector<Player *> &players, float relx, float rely)
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
+	glDisable(GL_STENCIL_TEST);
 	draw_map();
 
+	glEnable(GL_STENCIL_TEST);
 	draw_floor();
 	draw_players(players);
 
@@ -421,8 +423,8 @@ void update_stencil_buff()
 		&shadows_verts[0]
 	);
 
-	//glDisable(GL_DEPTH_TEST);
-	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	model  = translate(mat4(1.0f), -srel);
 	model *= scale(mat4(1.0f), vec3(1.0, -1.0, 1.0));
@@ -432,12 +434,12 @@ void update_stencil_buff()
 	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	//glStencilFunc(GL_ALWAYS, 1, 0xFF);
-	//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glDrawArrays(GL_QUADS, 0, stencil.size);
-	//glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	//glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
-	//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	//glEnable(GL_DEPTH_TEST);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
 }
