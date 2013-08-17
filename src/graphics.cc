@@ -279,7 +279,6 @@ void proj_face(
 	double radius
 ) {
 	vec3 uni;
-	vec3 center = (corner1 + corner2) * vec3(0.5, 0.5, 0.5);
 
 	// Cast the basic shadow
 	uni = normalize(corner1 - rel);
@@ -329,7 +328,6 @@ void update_stencil_buff()
 	// 2 shadow parts per side,
 	// with 4 verts each,
 	size_t prediction = obs.size() * 4 * 2 * 2;
-	size_t real_size = 0;
 
 	// realloc if insuficient space
 	if (stencil.size < prediction) {
