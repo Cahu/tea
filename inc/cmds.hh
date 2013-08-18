@@ -5,3 +5,6 @@
 
 #define CMD_SYNC  "SYNC"
 #define CMD_FLAGS "FLAGS"
+
+
+#define MAX_MSG_LEN 64
