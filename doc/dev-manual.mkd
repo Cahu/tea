@@ -1,0 +1,62 @@
+# Development manual
+
+Some things to know before changing or adding code.
+
+
+## Maps
+
+A map is a text file that looks like this:
+
+	  ##################
+					   #
+	#                  #
+	#  ##  ##  ##  ##  #
+	#  ##  ##  ##  ##  #
+	#                  #
+	#                  #
+	####################
+
+Walls are represented by '#' and spaces denote walkable area. More symbols
+will be used in the future (we want cardboard boxes, right ?).
+
+
+## Coordinate system
+
+In map files, the top left corner is at (0, 0), x axis goes right, y axis goes
+down. OpenGL coordinate system places the origin at the bottom left corner of
+the window so, in order do display the map as it is described in the map file,
+scaling is used (-1 on y axis).
+
+
+## Line of sight
+
+The stencil buffer is used to hide things behind walls. To do that a quad is
+drawn using the corners of the wall and their projection on a sphere of fixed
+radius. This radius is at least the diagonal of the map to ensure everything
+on the map is covered.
+
+In some cases (high slope), this may not be enough:
+
+                  A
+	+------------/|------------+
+	|           / |            |
+	|          /  |            |
+	|         +----+   we have |
+	|         |   ||   a hole  | -> fill the hole with a rectangle
+	|       o |   ||   here    |    using a perpendicular vector to
+	|         +----+           |    the farthest side of the shadow
+	|          \  |            |
+	|           \ |            |
+	+------------\|------------+
+	              B
+
+The hole is filled with a rectangle. The normalized vector (AB.y, AB.x, 0) is
+used in order to know in which direction it must be drawn.
+
+
+## Collision detection
+
+Maps are tile based. A ray tracer is used to find tiles in a straight line
+between to points. Diagonal movement is forbidden: a tile succeeding another
+in such a path must be either on the same row or on the same column as the
+previous tile.
