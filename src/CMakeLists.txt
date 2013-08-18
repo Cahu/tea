@@ -4,7 +4,8 @@ include_directories (${TEA_SOURCE_DIR}/inc/utils)
 add_subdirectory (utils)
 
 add_executable (tea-client
-	tea-client.cc Player.cc Map.cc shaders.cc graphics.cc geometry.cc
+	tea-client.cc Player.cc NetGame.cc Map.cc
+	shaders.cc graphics.cc geometry.cc
 )
 add_executable (tea-server
 	tea-server.cc Client.cc Player.cc Map.cc
