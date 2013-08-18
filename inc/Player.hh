@@ -1,3 +1,6 @@
+#ifndef _PLAYER_HH_
+#define _PLAYER_HH_
+
 #define FLAG_UP    0x01
 #define FLAG_DOWN  0x02
 #define FLAG_LEFT  0x04
@@ -26,3 +29,5 @@ namespace TEA {
 		void set_pos(double, double);
 	};
 }
+
+#endif
