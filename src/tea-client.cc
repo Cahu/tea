@@ -18,6 +18,7 @@
 #include "Map.hh"
 #include "Player.hh"
 #include "utils/netutils.hh"
+#include "graphics.hh"
 #include "utils/splitstr.hh"
 
 #define PORT 9999
@@ -48,12 +49,6 @@ static int udp_sock;
 // objects collections
 static std::vector<Player *> players;
 
-
-// graphic functions (see src/graphics.cc)
-void init_sdl();
-void init_opengl();
-void init_world(const char *);
-void draw_scene(const std::vector<Player *> &, float, float);
 
 // local events
 static int handle_sdl_events(flag_t *);
