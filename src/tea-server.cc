@@ -531,7 +531,7 @@ int process_client_dgram(const sockaddr_in &from, const char *dgram)
 		}
 	}
 
-	else if (2 == sscanf(dgram, CMD_FLAGS "%u:%u", &id, &flags)) {
+	else if (2 == sscanf(dgram, CMD_FLAGS " %u:%u", &id, &flags)) {
 
 		if (id >= clients.size() || clients[id] == NULL) {
 			fprintf(stderr, "Got message with invalid id #%u\n", id);
