@@ -70,11 +70,12 @@ int main(int argc, char *argv[])
 
 		// events on mouse/keyboard
 		switch (handle_sdl_events(&flags)) {
-			case -1:
-				goto END;
-				break;
 			case 0:
+				// no event
 				break;
+			case -1:
+				// quit
+				goto END;
 			default:
 				if (ng->playing()) {
 					ng->send_flags(flags);
