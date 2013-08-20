@@ -13,16 +13,16 @@ class NetGame {
 	public:
 	struct Event;
 	enum Error {
-		ERR_UNDEF         = 0,
-		ERR_CONNECT_TCP   = 1,
-		ERR_CONNECT_UDP   = 2,
-		ERR_COOKIE        = 3,
-		ERR_ID            = 4,
-		ERR_RECV_TCP      = 5,
-		ERR_RECV_UDP      = 6,
-		ERR_SEND_TCP      = 7,
-		ERR_SEND_UDP      = 8,
-		ERR_DISCONNECTED  = 9
+		ERR_UNDEF,
+		ERR_CONNECT_TCP,
+		ERR_CONNECT_UDP,
+		ERR_COOKIE,
+		ERR_ID,
+		ERR_RECV_TCP,
+		ERR_RECV_UDP,
+		ERR_SEND_TCP,
+		ERR_SEND_UDP,
+		ERR_DISCONNECTED
 	};
 
 
