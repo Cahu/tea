@@ -20,6 +20,7 @@ target_link_libraries(tea-client
 	${OPENGL_LIBRARY}
 	${GLEW_LIBRARY}
 	${SDL_LIBRARY}
+	${GLM_LIBRARY}
 	splitstr
 	netutils
 	mapvbo
