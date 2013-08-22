@@ -159,9 +159,9 @@ void init_opengl(void)
 }
 
 
-void init_world(const char *file)
+void use_map(const Map &newmap)
 {
-	map.load(file);
+	map = newmap;
 	map_to_VBO(map, mapvbo, floorvbo);
 }
 

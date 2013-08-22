@@ -23,6 +23,7 @@ using TEA::Map;
 using TEA::Player;
 
 
+Map map;
 NetGame *ng;
 static std::vector<Player *> players;
 
@@ -41,7 +42,9 @@ int main(int argc, char *argv[])
 {
 	init_sdl();
 	init_opengl();
-	init_world("map.txt");
+
+	map.load("map.txt");
+	use_map(map);
 
 	int exitval = EXIT_SUCCESS;
 
