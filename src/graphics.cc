@@ -343,7 +343,7 @@ void proj_face(
 
 void update_stencil_buff()
 {
-	const std::vector< Coor > &obs = map.get_obstacles();
+	const std::vector<Tile> &obs = map.get_obstacles();
 
 	// nothing to do
 	if (obs.size() == 0) {
@@ -382,7 +382,7 @@ void update_stencil_buff()
 	shadows_verts.reserve(prediction*3);
 	for (unsigned int i = 0; i < obs.size(); i++) {
 		// obstacle center
-		Coor c = obs[i];
+		Coor c(obs[i]);
 
 		// make sure to pass corners in the right order to proj_face
 		// (important for the completion rectangle trick)

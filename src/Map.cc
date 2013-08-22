@@ -12,6 +12,24 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 
+Tile::Tile(int xx, int yy) : x(xx), y(yy) {};
+
+Tile::Tile(const Coor &c)
+{
+	x = floor(c.x / MAPUSIZE);
+	y = floor(c.y / MAPUSIZE);
+}
+
+
+Coor::Coor(double xx, double yy) : x(xx), y(yy) {};
+
+Coor::Coor(const Tile &t)
+{
+	x = t.x * MAPUSIZE;
+	y = t.y * MAPUSIZE;
+}
+
+
 namespace TEA {
 
 	Map::Map()
@@ -58,9 +76,7 @@ namespace TEA {
 					x = 0;
 					break;
 				case GLYPH_WALL:
-					_obstacles.push_back(
-						Coor(MAPUSIZE*(x-1), MAPUSIZE*(_height-1))
-					);
+					_obstacles.push_back(Tile(x-1, _height-1));
 				case GLYPH_EMPTY:
 				default:
 					_map.back().push_back(c);
@@ -99,7 +115,7 @@ namespace TEA {
 	}
 
 
-	const std::vector< Coor > &Map::get_obstacles() const
+	const std::vector<Tile> &Map::get_obstacles() const
 	{
 		return _obstacles;
 	}
@@ -117,8 +133,15 @@ namespace TEA {
 	}
 
 
-	bool Map::tile_has_obstacle(unsigned int x, unsigned int y) const
+	bool Map::tile_has_obstacle(const Tile &t) const
 	{
+		if (t.x < 0 || t.y < 0) {
+			return false;
+		}
+
+		unsigned int y = t.y;
+		unsigned int x = t.x;
+
 		if (y >= _map.size()) {
 			return false;
 		}
@@ -131,26 +154,26 @@ namespace TEA {
 	}
 
 
-	bool Map::on_same_row(const Coor &a, const Coor &b) const
+	bool Map::on_same_row(const Tile &a, const Tile &b) const
 	{
-		return (floor(a.y/MAPUSIZE) == floor(b.y/MAPUSIZE));
+		return a.y == b.y;
 	}
 
 
-	bool Map::on_same_col(const Coor &a, const Coor &b) const
+	bool Map::on_same_col(const Tile &a, const Tile &b) const
 	{
-		return (floor(a.x/MAPUSIZE) == floor(b.x/MAPUSIZE));
+		return a.x == b.x;
 	}
 
 
-	bool Map::on_same_tile(const Coor &a, const Coor &b) const
+	bool Map::on_same_tile(const Tile &a, const Tile &b) const
 	{
 		return on_same_col(a, b) && on_same_row(a, b);
 	}
 
 
 	void Map::tile_path(
-		std::vector<Coor> &dst,
+		std::vector<Tile> &dst,
 		const Coor &s,
 		const Coor &e
 	) const
@@ -164,14 +187,14 @@ namespace TEA {
 		double xspeed = e.x - s.x;
 		double yspeed = e.y - s.y;
 
-		// find out how many loops are necessary:
+		// find out how many loops maximum are necessary:
 		unsigned int n;
 		n  = std::abs(e.x - s.x) / MAPUSIZE;
 		n += std::abs(e.y - s.y) / MAPUSIZE;
 		n += 1;
 
 		while (n--) {
-			dst.push_back(Coor(floor(x/MAPUSIZE), floor(y/MAPUSIZE)));
+			dst.push_back(Coor(x, y));
 
 			// if both starting point and destination point are on the same
 			// tile, there's little to do:
@@ -228,7 +251,7 @@ namespace TEA {
 				   (!on_same_col(Coor(oldx, oldy), Coor(x, y)))
 				&& (!on_same_row(Coor(oldx, oldy), Coor(x, y)))
 			   ) {
-				dst.push_back(Coor(floor(oldx/MAPUSIZE), floor(y/MAPUSIZE)));
+				dst.push_back(Coor(oldx, y));
 			}
 		}
 	}
