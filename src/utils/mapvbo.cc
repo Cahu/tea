@@ -16,11 +16,14 @@ void map_to_VBO(const TEA::Map &map, structVBO &walls, structVBO &floor)
 		for (unsigned int j = 0; j < mapdata[i].size(); j++) {
 
 			switch (mapdata[i][j]) {
+				// All basic shapes are centered on 0,0 and are of size 1
+				// unit. We need to apply +0.5 in order to place the top left
+				// corner of every shape at 0,0 and scale with MAPUSIZE.
 				case GLYPH_WALL:
 					for (unsigned int k = 0; k < 3*CUBE_N_VERTS; k += 3) {
-						m_verts.push_back((CUBE_VERTS[k+0]+j)*MAPUSIZE);
-						m_verts.push_back((CUBE_VERTS[k+1]+i)*MAPUSIZE);
-						m_verts.push_back((CUBE_VERTS[k+2]+0)*MAPUSIZE);
+						m_verts.push_back((CUBE_VERTS[k+0]+j+0.5)*MAPUSIZE);
+						m_verts.push_back((CUBE_VERTS[k+1]+i+0.5)*MAPUSIZE);
+						m_verts.push_back((CUBE_VERTS[k+2])*MAPUSIZE);
 						m_normals.push_back(CUBE_NORMALS[k+0]);
 						m_normals.push_back(CUBE_NORMALS[k+1]);
 						m_normals.push_back(CUBE_NORMALS[k+2]);
@@ -28,8 +31,8 @@ void map_to_VBO(const TEA::Map &map, structVBO &walls, structVBO &floor)
 					break;
 				case GLYPH_EMPTY:
 					for (unsigned int k = 0; k < 3*TILE_N_VERTS; k += 3) {
-						f_verts.push_back((TILE_VERTS[k+0]+j)*MAPUSIZE);
-						f_verts.push_back((TILE_VERTS[k+1]+i)*MAPUSIZE);
+						f_verts.push_back((TILE_VERTS[k+0]+j+0.5)*MAPUSIZE);
+						f_verts.push_back((TILE_VERTS[k+1]+i+0.5)*MAPUSIZE);
 						f_verts.push_back((TILE_VERTS[k+2]-0.5)*MAPUSIZE);
 						f_normals.push_back(TILE_NORMALS[k+0]);
 						f_normals.push_back(TILE_NORMALS[k+1]);

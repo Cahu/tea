@@ -386,30 +386,30 @@ void update_stencil_buff()
 
 		// make sure to pass corners in the right order to proj_face
 		// (important for the completion rectangle trick)
-		if (rel.x < (c.x - MAPUSIZE/2)) {
+		if (rel.x < c.x) {
 			// we can see the left side of the obstacle
-			vec3 tl_corner = vec3(c.x-MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
-			vec3 bl_corner = vec3(c.x-MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			vec3 tl_corner = vec3(c.x, c.y         , 0.0);
+			vec3 bl_corner = vec3(c.x, c.y+MAPUSIZE, 0.0);
 			proj_face(shadows_verts, tl_corner, bl_corner, proj_length);
 		}
-		else if (rel.x > (c.x + MAPUSIZE/2)) {
+		else if (rel.x > c.x + MAPUSIZE) {
 			// we can see the right side of the obstacle
-			vec3 tr_corner = vec3(c.x+MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
-			vec3 br_corner = vec3(c.x+MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
+			vec3 tr_corner = vec3(c.x+MAPUSIZE, c.y         , 0.0);
+			vec3 br_corner = vec3(c.x+MAPUSIZE, c.y+MAPUSIZE, 0.0);
 			proj_face(shadows_verts, br_corner, tr_corner, proj_length);
 		}
 
-		if (rel.y < (c.y - MAPUSIZE/2)) {
+		if (rel.y < c.y) {
 			// we can see the top side of the obstacle
-			vec3 tl_corner = vec3(c.x+MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
-			vec3 tr_corner = vec3(c.x-MAPUSIZE/2, c.y-MAPUSIZE/2, 0.0);
-			proj_face(shadows_verts, tl_corner, tr_corner, proj_length);
+			vec3 tl_corner = vec3(c.x         , c.y, 0.0);
+			vec3 tr_corner = vec3(c.x+MAPUSIZE, c.y, 0.0);
+			proj_face(shadows_verts, tr_corner, tl_corner, proj_length);
 		}
-		else if (rel.y > (c.y + MAPUSIZE/2)) {
+		else if (rel.y > c.y + MAPUSIZE) {
 			// we can see the bottom side of the obstacle
-			vec3 bl_corner = vec3(c.x+MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
-			vec3 br_corner = vec3(c.x-MAPUSIZE/2, c.y+MAPUSIZE/2, 0.0);
-			proj_face(shadows_verts, br_corner, bl_corner, proj_length);
+			vec3 bl_corner = vec3(c.x         , c.y+MAPUSIZE, 0.0);
+			vec3 br_corner = vec3(c.x+MAPUSIZE, c.y+MAPUSIZE, 0.0);
+			proj_face(shadows_verts, bl_corner, br_corner, proj_length);
 		}
 	}
 
