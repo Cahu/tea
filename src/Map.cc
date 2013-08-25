@@ -123,13 +123,13 @@ namespace TEA {
 
 	unsigned int Map::get_width() const
 	{
-		return _width;
+		return _width*MAPUSIZE;
 	}
 
 
 	unsigned int Map::get_height() const
 	{
-		return _height;
+		return _height*MAPUSIZE;
 	}
 
 
