@@ -189,8 +189,9 @@ namespace TEA {
 
 		// find out how many loops maximum are necessary:
 		unsigned int n;
-		n  = std::abs(e.x - s.x) / MAPUSIZE;
-		n += std::abs(e.y - s.y) / MAPUSIZE;
+		Tile ts(s), te(e);
+		n  = std::abs(ts.x - te.x);
+		n += std::abs(ts.y - te.y);
 		n += 1;
 
 		while (n--) {
