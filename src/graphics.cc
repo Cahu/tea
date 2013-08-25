@@ -361,6 +361,7 @@ void update_stencil_buff()
 
 	// realloc if insuficient space
 	if (stencil.size < prediction) {
+		fprintf(stderr, "INFO: reallocating VBO for stencil buffer\n");
 		if (stencil.size == 0) {
 			stencil.size = prediction;
 		} else {
@@ -414,7 +415,9 @@ void update_stencil_buff()
 	}
 
 	// update stencil buffer content
-	stencil.size = shadows_verts.size()/3;
+#ifndef NDEBUG
+	assert(stencil.size >= shadows_verts.size()/3);
+#endif
 	glBindBuffer(GL_ARRAY_BUFFER, stencil.verts);
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
