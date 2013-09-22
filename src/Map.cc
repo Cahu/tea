@@ -187,14 +187,7 @@ namespace TEA {
 		double xspeed = e.x - s.x;
 		double yspeed = e.y - s.y;
 
-		// find out how many loops maximum are necessary:
-		unsigned int n;
-		Tile ts(s), te(e);
-		n  = std::abs(ts.x - te.x);
-		n += std::abs(ts.y - te.y);
-		n += 1;
-
-		while (n--) {
+		while (1) {
 			dst.push_back(Coor(x, y));
 
 			// if both starting point and destination point are on the same
@@ -253,6 +246,13 @@ namespace TEA {
 				&& (!on_same_row(Coor(oldx, oldy), Coor(x, y)))
 			   ) {
 				dst.push_back(Coor(oldx, y));
+			}
+
+			if (
+				   std::abs(x - s.x) > std::abs(xspeed)
+				|| std::abs(y - s.y) > std::abs(yspeed)
+			) {
+				break;
 			}
 		}
 	}
