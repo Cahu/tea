@@ -9,6 +9,7 @@
 #include <vector>
 #include <sstream>
 
+#include "Map.hh"
 #include "Player.hh"
 #include "Client.hh"
 #include "cmds.hh"
@@ -22,10 +23,12 @@
 #define PORT 9999
 #define MAX_MSG_LEN 64
 
+using TEA::Map;
 using TEA::Client;
 using TEA::Player;
 
 // state variables
+static Map map;
 static int tcp_socket;
 static int udp_socket;
 
@@ -64,6 +67,8 @@ int main(void)
 	srand(time(NULL));
 
 	init_network(PORT);
+
+	map.load("map.txt");
 
 	// server poll stuff
 	pollfd pfd;
