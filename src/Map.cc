@@ -208,16 +208,16 @@ namespace TEA {
 			// Let's get the starting coordinates of next tiles in both
 			// directions.  Note that we have to use floor or ceil depending
 			// on the movement direction.
-			// When going towards -x or -y, we need to substract 1 to the
-			// number because tiles boudaries are not shared. A tile owns its
-			// top and left boundaries, the right and bottom ones belong to
-			// neighbouring tiles.
+			// When going towards -x or -y, we need to substract a small value
+			// to the number because tiles boudaries are not shared. A tile
+			// owns its top and left boundaries, the right and bottom ones
+			// belong to neighbouring tiles.
 			double nxt_col = (xspeed > 0)
 				? floor((x + MAPUSIZE) / MAPUSIZE) * MAPUSIZE
-				: ceil ((x - MAPUSIZE) / MAPUSIZE) * MAPUSIZE - 1;
+				: ceil ((x - MAPUSIZE) / MAPUSIZE) * MAPUSIZE - 0.001;
 			double nxt_row = (yspeed > 0)
 				? floor((y + MAPUSIZE) / MAPUSIZE) * MAPUSIZE
-				: ceil ((y - MAPUSIZE) / MAPUSIZE) * MAPUSIZE - 1;
+				: ceil ((y - MAPUSIZE) / MAPUSIZE) * MAPUSIZE - 0.001;
 
 			// Now we can find if the next tile we encounter is on the x axis
 			// or on the y axis based on the starting position and speeds on
