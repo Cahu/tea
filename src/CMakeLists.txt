@@ -14,6 +14,7 @@ add_executable (tea-server
 target_link_libraries(tea-server
 	splitstr
 	netutils
+	playerutils
 )
 
 target_link_libraries(tea-client
@@ -24,4 +25,5 @@ target_link_libraries(tea-client
 	splitstr
 	netutils
 	mapvbo
+	playerutils
 )

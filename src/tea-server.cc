@@ -13,6 +13,7 @@
 #include "Client.hh"
 #include "cmds.hh"
 #include "utils/netutils.hh"
+#include "utils/playerutils.hh"
 
 #ifndef NDEBUG
 	#include <assert.h>
@@ -107,12 +108,7 @@ int main(void)
 		}
 
 		// update state
-		for (unsigned int i = 0; i < players.size(); i++) {
-			Player *p = players[i];
-			if (p != NULL) {
-				p->tick(10);
-			}
-		}
+		tick_players(players, map, 10);
 
 		// 10ms sleep
 		usleep(10000);

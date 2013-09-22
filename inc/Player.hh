@@ -7,6 +7,7 @@
 #define FLAG_RIGHT 0x08
 
 #define PSPEED 0.01  // player default speed
+#define PUSIZE 1.0
 
 
 namespace TEA {

@@ -15,6 +15,7 @@
 #include "Player.hh"
 #include "NetGame.hh"
 #include "graphics.hh"
+#include "utils/playerutils.hh"
 
 #define PORT 9999
 
@@ -35,7 +36,6 @@ static void add_player(unsigned int, double = 0, double = 0);
 static void remove_player(unsigned int);
 static void sync_player_pos(unsigned int, double, double);
 static void sync_player_flags(unsigned int, unsigned int);
-static void tick_players(unsigned int);
 
 
 
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 		}
 
 		// update state
-		tick_players(10);
+		tick_players(players, map, 10);
 
 		// draw
 		if (ng->playing()) {
@@ -162,18 +162,6 @@ void sync_player_flags(unsigned int pid, unsigned int flags)
 	}
 
 	players[pid]->set_flags(flags);
-}
-
-
-static void tick_players(unsigned int delay)
-{
-	for (unsigned int i = 0; i < players.size(); i++) {
-		Player *p = players[i];
-
-		if (p != NULL) {
-			p->tick(delay);
-		}
-	}
 }
 
 
