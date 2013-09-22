@@ -271,7 +271,7 @@ void draw_map()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, mapvbo.normals);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glDrawArrays(GL_QUADS, 0, mapvbo.size);
+	glDrawArrays(GL_TRIANGLES, 0, mapvbo.size);
 }
 
 
@@ -290,7 +290,7 @@ void draw_floor()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, floorvbo.normals);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glDrawArrays(GL_QUADS, 0, floorvbo.size);
+	glDrawArrays(GL_TRIANGLES, 0, floorvbo.size);
 }
 
 
@@ -313,11 +313,14 @@ void proj_face(
 	// Cast the basic shadow
 	uni = normalize(corner1 - rel);
 	vec3 proj1 = rel + uni * vec3(radius, radius, radius);
-	vector_append_vec(dst, corner1);
-	vector_append_vec(dst, proj1  );
-
 	uni = normalize(corner2 - rel);
 	vec3 proj2 = rel + uni * vec3(radius, radius, radius);
+
+	// append two tris equivalent to a quad for the shadow
+	vector_append_vec(dst, corner1);
+	vector_append_vec(dst, proj1  );
+	vector_append_vec(dst, proj2  );
+	vector_append_vec(dst, corner1);
 	vector_append_vec(dst, proj2  );
 	vector_append_vec(dst, corner2);
 
@@ -335,8 +338,12 @@ void proj_face(
 	// +-----------\-|------------+
 	vec3 proj12 = proj2 - proj1;
 	vec3 comp = normalize(vec3(-proj12.y, proj12.x, proj12.z));
+
 	vector_append_vec(dst, proj1);
 	vector_append_vec(dst, proj1 - comp * vec3(radius, radius, radius));
+	vector_append_vec(dst, proj2 - comp * vec3(radius, radius, radius));
+
+	vector_append_vec(dst, proj1);
 	vector_append_vec(dst, proj2 - comp * vec3(radius, radius, radius));
 	vector_append_vec(dst, proj2);
 }
@@ -356,8 +363,8 @@ void update_stencil_buff()
 	// draw shadows of:
 	// at most 2 sides of the obstacle,
 	// 2 shadow parts per side,
-	// with 4 verts each,
-	size_t prediction = obs.size() * 4 * 2 * 2;
+	// with 6 verts each,
+	size_t prediction = obs.size() * 6 * 2 * 2;
 
 	// realloc if insuficient space
 	if (stencil.size < prediction) {
@@ -439,7 +446,7 @@ void update_stencil_buff()
 
 	glStencilFunc(GL_ALWAYS, 1, 0xFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	glDrawArrays(GL_QUADS, 0, stencil.size);
+	glDrawArrays(GL_TRIANGLES, 0, stencil.size);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 
