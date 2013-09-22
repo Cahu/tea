@@ -237,9 +237,13 @@ void NetGame::handle_udp_msg()
 	NetGame::Event e;
 
 	if (2 == sscanf(msg, CMD_FLAGS " %u:%u", &pid, &pflags)) {
-		e.pid = pid;
-		e.type = NetGame::Event::PLAYER_FLAGS;
-		enqueue_event(e);
+		if (pid != _client_id) {
+			e.pid = pid;
+			e.type = NetGame::Event::PLAYER_FLAGS;
+			enqueue_event(e);
+		} else {
+			// TODO: use as ACK
+		}
 	}
 
 	else if (strstr(msg, CMD_SYNC) == msg) {
