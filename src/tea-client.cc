@@ -17,7 +17,8 @@
 #include "graphics.hh"
 #include "utils/playerutils.hh"
 
-#define PORT 9999
+#define PORT  9999
+#define DELAY 10
 
 
 using TEA::Map;
@@ -65,6 +66,9 @@ int main(int argc, char *argv[])
 	unsigned int id = ng->get_id();
 	printf("Got id %u\n", id);
 
+	int ticks;
+	ticks = SDL_GetTicks();
+
 	// main loop
 	while (1) {
 
@@ -99,7 +103,11 @@ int main(int argc, char *argv[])
 		}
 
 		// sleep
-		SDL_Delay(10);
+		int time = DELAY - (SDL_GetTicks() - ticks);
+		if (time > 0) {
+			SDL_Delay(time);
+		}
+		ticks = SDL_GetTicks();
 	}
 
 	END:
