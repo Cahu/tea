@@ -1,9 +1,10 @@
 #include <cstdio>
-#include <cstdlib>
 #include "playerutils.hh"
 
 using TEA::Map;
 using TEA::Player;
+
+#define EPSILON 0.01
 
 
 void tick_players(
@@ -25,21 +26,10 @@ void tick_players(
 		for (int n = 0; n < 2; n++) {
 			// do this twice so we can correct the position on both axis
 			std::vector<Tile> path;
-
 			map.tile_path(path, c1, c2);
-
-			printf(
-				"path %d between [%2.2f:%2.2f] and [%2.2f:%2.2f]:\t",
-				n, c1.x, c1.y, c2.x, c2.y
-			);
-			for (unsigned int i = 0; i < path.size(); i++) {
-				printf(" [%d:%d]", path[i].x, path[i].y);
-			}
-			puts("");
 
 			if (map.tile_has_obstacle(path[0])) {
 				fprintf(stderr, "OMG already in an obstacle!\n");
-				exit(EXIT_FAILURE);
 				// special case where a player is already inside an obstacle
 				// from the starting position
 			}
@@ -60,26 +50,23 @@ void tick_players(
 					fprintf(stderr, "Tile path has both mvtx and mvty!\n");
 				}
 
-				if (mvtx) {
+				else if (mvtx) {
 					c2.x = (mvtx > 0)
-						? path[i].x*MAPUSIZE-0.01
-						: (path[i].x+1)*MAPUSIZE+0.01;
+						?  path[i].x   *MAPUSIZE-EPSILON
+						: (path[i].x+1)*MAPUSIZE+EPSILON;
 					break;
 				}
 
-				if (mvty) {
+				else if (mvty) {
 					c2.y = (mvty > 0)
-						? path[i].y*MAPUSIZE-0.01
-						: (path[i].y+1)*MAPUSIZE+0.01;
+						?  path[i].y   *MAPUSIZE-EPSILON
+						: (path[i].y+1)*MAPUSIZE+EPSILON;
 					break;
 				}
 			}
 		}
 
-		printf("result: [%f:%f]\n", c2.x, c2.y);
 		p->set_pos(c2.x, c2.y);
-
-		puts("===");
 	}
 }
 
