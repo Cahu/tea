@@ -132,8 +132,9 @@ void init_opengl(void)
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
-	// stencil shader (minimum computation!)
 	shaders.clear();
+
+	// stencil shader (minimum computation!)
 	vshader = load_shader(GL_VERTEX_SHADER, "shaders/stencil.vert");
 	if (vshader == 0) { exit(EXIT_FAILURE); }
 	fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/stencil.frag");
@@ -302,6 +303,9 @@ void vector_append_vec(std::vector<float> &dst, vec3 vec)
 }
 
 
+// cast the shadow of a wall. we need the two corners of that wall and the
+// radius (how far to cast this shadow). `dst` holds the resulting points of the
+// magic that follows...
 void proj_face(
 	std::vector<float> &dst,
 	vec3 corner1,
@@ -310,7 +314,8 @@ void proj_face(
 ) {
 	vec3 uni;
 
-	// Cast the basic shadow
+	// Cast the basic shadow. Here `rel` holds the position of the observer.
+	// `rel` is set by the caller.
 	uni = normalize(corner1 - rel);
 	vec3 proj1 = rel + uni * vec3(radius, radius, radius);
 	uni = normalize(corner2 - rel);
@@ -336,6 +341,8 @@ void proj_face(
 	// |         +----+           |    the farthest side of the shadow
 	// |          \  |            |
 	// +-----------\-|------------+
+
+	// normal of (x, y,z) is (-y, x, z)
 	vec3 proj12 = proj2 - proj1;
 	vec3 comp = normalize(vec3(-proj12.y, proj12.x, proj12.z));
 
@@ -362,8 +369,8 @@ void update_stencil_buff()
 
 	// draw shadows of:
 	// at most 2 sides of the obstacle,
-	// 2 shadow parts per side,
-	// with 6 verts each,
+	// 2 shadow parts per side (1 quad = 2 tris),
+	// with 6 verts each (basic shadow + extension when high slope),
 	size_t prediction = obs.size() * 6 * 2 * 2;
 
 	// realloc if insuficient space
@@ -393,7 +400,8 @@ void update_stencil_buff()
 		Coor c(obs[i]);
 
 		// make sure to pass corners in the right order to proj_face
-		// (important for the completion rectangle trick)
+		// (important for the completion rectangle trick). first pass the corner
+		// on the left of the observer, then the one on the right.
 		if (rel.x < c.x) {
 			// we can see the left side of the obstacle
 			vec3 tl_corner = vec3(c.x, c.y         , 0.0);
