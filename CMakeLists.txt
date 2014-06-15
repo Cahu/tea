@@ -2,11 +2,6 @@ cmake_minimum_required (VERSION 2.6)
 
 project (TEA)
 
-set (CMAKE_MODULE_PATH
-	${CMAKE_MODULE_PATH}
-	${CMAKE_SOURCE_DIR}/cmake/
-)
-
 include_directories (${TEA_SOURCE_DIR}/inc)
 include_directories (${TEA_SOURCE_DIR}/lib/tea)
 include_directories (${TEA_SOURCE_DIR}/inc/utils)
