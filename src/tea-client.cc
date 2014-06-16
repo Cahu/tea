@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 			(argc < 2) ? "127.0.0.1" : argv[1],
 			PORT
 		);
+		ng->handshake();
 	} catch (NetGame::Error &err) {
 		fprintf(stderr, "Error #%d while connecting to server", err);
 		exit(EXIT_FAILURE);

@@ -39,7 +39,6 @@ class NetGame {
 
 
 	protected:
-	void handshake();
 	void handle_tcp_msg();
 	void handle_udp_msg();
 
@@ -50,6 +49,7 @@ class NetGame {
 	~NetGame();
 	NetGame(const char *, unsigned short);
 
+	void handshake();
 	void poll_events();
 	bool pop_event(NetGame::Event &);
 

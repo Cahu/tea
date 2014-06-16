@@ -55,8 +55,6 @@ NetGame::NetGame(const char *ip, unsigned short port)
 	_fds[0].events = POLLIN;
 	_fds[1].fd     = _udp_sock;
 	_fds[1].events = POLLIN;
-
-	handshake();
 }
 
 
