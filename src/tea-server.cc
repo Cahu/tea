@@ -189,7 +189,7 @@ void add_client(int csock, const struct sockaddr_in &caddr)
 	//caddr.
 
 	int cid;
-	
+
 	if (!free_slots.empty()) {
 		// recycle slots in our vectors
 		cid = free_slots.back();
@@ -205,7 +205,7 @@ void add_client(int csock, const struct sockaddr_in &caddr)
 		cfds[cid].events = POLLIN;
 		clients[cid] = new Client(csock, caddr);
 	}
-	
+
 	else {
 		pollfd pfd = {
 			.fd = csock,
@@ -343,9 +343,7 @@ void sync_everyone()
 			if (c != NULL) {
 				// send via UDP
 				const sockaddr_in &addr = c->get_addr();
-				sendto(
-					udp_socket, str, len, 0, (sockaddr*) &addr, sizeof addr
-				);
+				sendto(udp_socket, str, len, 0, (sockaddr*) &addr, sizeof addr);
 			}
 		}
 	}
@@ -433,7 +431,7 @@ int send_player_list(unsigned int cid)
 	assert(players.size() >= cid);
 	assert(clients.size() >= cid);
 	assert(clients.size() == players.size());
-#endif 
+#endif
 
 	int nplayers = 0;
 
