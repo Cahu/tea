@@ -122,28 +122,37 @@ void init_opengl(void)
 
 	// default shader
 	shaders.clear();
+
 	vshader = load_shader(GL_VERTEX_SHADER, "shaders/default.vert");
 	if (vshader == 0) { exit(EXIT_FAILURE); }
+
 	fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/default.frag");
 	if (fshader == 0) { exit(EXIT_FAILURE); }
+
 	shaders.push_back(vshader);
 	shaders.push_back(fshader);
+
 	default_program = make_program(shaders);
 	if (default_program == 0) { exit(EXIT_FAILURE); }
+
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
 	shaders.clear();
 
-	// stencil shader (minimum computation!)
+	// shader used for stencil buffer (minimum computation!)
 	vshader = load_shader(GL_VERTEX_SHADER, "shaders/stencil.vert");
 	if (vshader == 0) { exit(EXIT_FAILURE); }
+
 	fshader = load_shader(GL_FRAGMENT_SHADER, "shaders/stencil.frag");
 	if (fshader == 0) { exit(EXIT_FAILURE); }
+
 	shaders.push_back(vshader);
 	shaders.push_back(fshader);
+
 	stencil_program = make_program(shaders);
 	if (stencil_program == 0) { exit(EXIT_FAILURE); }
+
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 
