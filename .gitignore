@@ -2,3 +2,5 @@ Makefile
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
+src/tea-server
+src/tea-client
