@@ -1,3 +1,15 @@
 # TEA
 
 Porting perl version to C++ to benefit from newer OpenGL versions.
+
+
+# Usage:
+
+Start the server first then start a few clients
+
+
+## Client commands
+
+* 'j' to join
+* 'l' to leave
+* 'q' to quit
